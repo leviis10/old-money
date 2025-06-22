@@ -2,6 +2,11 @@
 name = "old-money"
 version = "1.0.0"
 edition = "2024"
+authors = ["Levi Indrajaya Sutantio <alevindrajaya@gmail.com>"]
+description = "Money Management Mobile Application APIs"
+license = "MIT"
+repository = "https://github.com/leviis10/old-money"
+readme = "README.md"
 
 [dependencies]
 axum = "0.8.4"
