@@ -46,7 +46,7 @@ async fn start() -> Result<(), Box<dyn Error>> {
                 .layer(TimeoutLayer::new(Duration::from_secs(60)))
                 .compression()
                 .decompression()
-                .set_x_request_id(MakeRequestUuid::default())
+                .set_x_request_id(MakeRequestUuid)
                 .propagate_x_request_id(),
         );
 
