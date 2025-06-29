@@ -31,7 +31,6 @@ async fn start() -> Result<(), Box<dyn Error>> {
     let shared_state = Arc::new(AppState {
         db: Database::connect("postgres://postgres:password@localhost:5432/old_money").await?,
     });
-    Migrator::up(&shared_state.db, None).await?;
 
     let app = Router::new()
         .merge(routes::register())
