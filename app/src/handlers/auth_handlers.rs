@@ -71,7 +71,6 @@ pub async fn login(
 
     // compare the password on database and on the req body
     let parsed_hash = PasswordHash::new(&found_user.password).unwrap();
-    println!("{parsed_hash}");
     let is_valid = Argon2::default()
         .verify_password(payload.password.as_bytes(), &parsed_hash)
         .is_ok();
