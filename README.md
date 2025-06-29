@@ -12,4 +12,4 @@ This project mainly for my educational purposes but this project can be extended
 [ ] Authentication (JWT, RBAC, Refresh Token)
 [ ] Request Body Validation
 [ ] Cors Security
-
+[ ] Error Handling
