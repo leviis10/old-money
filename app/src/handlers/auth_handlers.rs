@@ -7,7 +7,10 @@ use crate::dto::response::auth_dto::{
     login_user_response::{LoginUserResponse, LoginUserResponseBuilder},
 };
 use crate::dto::response::global::success_response::SuccessResponse;
-use crate::entities::{prelude::Users, users};
+use crate::entities::prelude::Roles;
+use crate::entities::{prelude::Users, roles, user_roles, users};
+use crate::utils::jwt_utils;
+use crate::utils::jwt_utils::Claims;
 use argon2::{
     Argon2, PasswordHash, PasswordHasher, PasswordVerifier,
     password_hash::{SaltString, rand_core::OsRng},
@@ -15,7 +18,9 @@ use argon2::{
 use axum::Json;
 use axum::extract::State;
 use axum::http::StatusCode;
-use sea_orm::{ActiveValue, ColumnTrait, EntityTrait, QueryFilter};
+use sea_orm::{
+    ActiveModelTrait, ActiveValue, ColumnTrait, EntityTrait, QueryFilter, TransactionTrait,
+};
 use std::sync::Arc;
 use time::OffsetDateTime;
 
@@ -32,20 +37,42 @@ pub async fn register(
         .to_string();
 
     // store the user on database
+    // start database transaction
+    let txn = state.db.clone().begin().await.unwrap();
+
+    // create new user
     let new_user = users::ActiveModel {
         username: ActiveValue::Set(payload.username.clone()),
         email: ActiveValue::Set(payload.email.clone()),
         password: ActiveValue::Set(hashed_password),
         ..Default::default()
     };
-    let db_response = Users::insert(new_user).exec(&state.db).await.unwrap();
+    let user_model = new_user.insert(&txn).await.unwrap();
+
+    // find 'ADMIN' role
+    let admin_role_model = Roles::find()
+        .filter(roles::Column::Name.eq("ADMIN"))
+        .one(&txn)
+        .await
+        .unwrap()
+        .unwrap();
+
+    // insert the role on `UserRoles` table
+    let new_user_role = user_roles::ActiveModel {
+        user_id: ActiveValue::Set(user_model.id),
+        role_id: ActiveValue::Set(admin_role_model.id),
+    };
+    new_user_role.insert(&txn).await.unwrap();
+
+    // commit changes
+    txn.commit().await.unwrap();
 
     // return success response
     let now = OffsetDateTime::now_utc();
     let response = SuccessResponse::new(
         "Success create new user",
         CreateUserResponseBuilder::default()
-            .id(db_response.last_insert_id)
+            .id(user_model.id)
             .username(payload.username)
             .email(payload.email)
             .created_at(now)
@@ -62,12 +89,13 @@ pub async fn login(
     Json(payload): Json<LoginUserRequest>,
 ) -> (StatusCode, SuccessResponse<LoginUserResponse>) {
     // check the username on the database
-    let found_user = Users::find()
+    let found_users = Users::find()
         .filter(users::Column::Username.eq(payload.username))
-        .one(&state.db)
+        .find_with_related(Roles)
+        .all(&state.db)
         .await
-        .unwrap()
         .unwrap();
+    let (found_user, roles) = &found_users[0];
 
     // compare the password on database and on the req body
     let parsed_hash = PasswordHash::new(&found_user.password).unwrap();
@@ -79,26 +107,24 @@ pub async fn login(
         let response = SuccessResponse::new(
             "wrong password",
             LoginUserResponseBuilder::default()
-                .id(0)
-                .username(found_user.username)
-                .email(found_user.email)
-                .created_at(found_user.created_at)
-                .updated_at(found_user.updated_at)
+                .access_token(String::from("INVALID"))
+                .refresh_token(String::from("INVALID"))
                 .build()
                 .unwrap(),
         );
         return (StatusCode::BAD_REQUEST, response);
     }
 
+    // Generate JWT
+    let claims = Claims::new(&found_user, roles);
+    let token = jwt_utils::generate_token(claims);
+
     // response
     let response = SuccessResponse::new(
         "Successfully logged in",
         LoginUserResponseBuilder::default()
-            .id(found_user.id)
-            .username(found_user.username)
-            .email(found_user.email)
-            .created_at(found_user.created_at)
-            .updated_at(found_user.updated_at)
+            .access_token(token.clone())
+            .refresh_token(token)
             .build()
             .unwrap(),
     );

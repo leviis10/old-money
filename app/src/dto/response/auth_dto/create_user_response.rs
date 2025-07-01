@@ -6,7 +6,7 @@ use time::OffsetDateTime;
 #[builder(setter(into))]
 #[serde(rename_all = "camelCase")]
 pub struct CreateUserResponse {
-    id: i64,
+    id: i32,
 
     username: String,
 

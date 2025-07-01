@@ -1,5 +1,4 @@
 use axum::Router;
-use migration::{Migrator, MigratorTrait};
 use sea_orm::{Database, DatabaseConnection};
 use std::error::Error;
 use std::sync::Arc;
@@ -16,6 +15,7 @@ mod dto;
 mod entities;
 mod handlers;
 mod routes;
+mod utils;
 
 struct AppState {
     db: DatabaseConnection,

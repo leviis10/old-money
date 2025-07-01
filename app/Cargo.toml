@@ -22,3 +22,4 @@ tower = "0.5.2"
 tracing = "0.1.41"
 migration = {path = "../migration"}
 argon2 = "0.5.3"
+jsonwebtoken = "9.3.1"

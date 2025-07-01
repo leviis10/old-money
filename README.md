@@ -9,7 +9,7 @@ This project mainly for my educational purposes but this project can be extended
 - [x] Route Management
 - [x] Compression & Decompression (gzip, deflate, br, zstd)
 - [x] Standardize Success Response
-- [ ] Authentication (JWT, RBAC, Refresh Token)
+- [ ] Authentication (~~JWT~~, ~~RBAC~~, Refresh Token)
 - [ ] Request Body Validation
 - [ ] Cors Security
 - [ ] Error Handling
