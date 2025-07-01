@@ -137,7 +137,6 @@ dependencies = [
  "axum",
  "derive_builder",
  "jsonwebtoken",
- "migration",
  "sea-orm",
  "serde",
  "time",
