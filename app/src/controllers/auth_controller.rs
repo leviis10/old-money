@@ -1,10 +1,11 @@
 use crate::AppState;
-use crate::dto::request::auth_dto::{
-    create_user_request::CreateUserRequest, login_user_request::LoginUserRequest,
+use crate::dto::request::auth_dto::create_user_request::CreateUserRequest;
+use crate::dto::request::auth_dto::login_user_request::LoginUserRequest;
+use crate::dto::response::auth_dto::create_user_response::{
+    CreateUserResponse, CreateUserResponseBuilder,
 };
-use crate::dto::response::auth_dto::{
-    create_user_response::{CreateUserResponse, CreateUserResponseBuilder},
-    login_user_response::{LoginUserResponse, LoginUserResponseBuilder},
+use crate::dto::response::auth_dto::login_user_response::{
+    LoginUserResponse, LoginUserResponseBuilder,
 };
 use crate::dto::response::global::success_response::SuccessResponse;
 use crate::services::auth_service;
@@ -18,7 +19,7 @@ pub async fn register(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<CreateUserRequest>,
 ) -> (StatusCode, SuccessResponse<CreateUserResponse>) {
-    let user_model = auth_service::register(&state.db, payload).await;
+    let user_model = auth_service::register(&state.db, &payload).await;
 
     let now = OffsetDateTime::now_utc();
     let response = SuccessResponse::new(
@@ -41,12 +42,12 @@ pub async fn login(
     Json(payload): Json<LoginUserRequest>,
 ) -> (StatusCode, SuccessResponse<LoginUserResponse>) {
     match auth_service::login(&state.db, payload).await {
-        Ok(token) => {
+        Ok((access_token, refresh_token)) => {
             let response = SuccessResponse::new(
                 "Successfully logged in",
                 LoginUserResponseBuilder::default()
-                    .access_token(token.clone())
-                    .refresh_token(token)
+                    .access_token(access_token)
+                    .refresh_token(refresh_token)
                     .build()
                     .unwrap(),
             );

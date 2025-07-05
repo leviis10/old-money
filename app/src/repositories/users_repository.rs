@@ -23,5 +23,5 @@ pub async fn find_by_username(
         .await
         .unwrap();
 
-    found_users[0].clone()
+    found_users.get(0).unwrap().clone()
 }

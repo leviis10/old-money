@@ -1,46 +1,66 @@
-use crate::entities::roles::Model as RolesModel;
-use crate::entities::users::Model as UsersModel;
-use crate::enums::roles::Roles;
+use crate::entities::roles;
 use jsonwebtoken::{EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 use time::{Duration, OffsetDateTime};
 
+pub trait JwtToken {}
+
 #[derive(Serialize, Deserialize)]
-pub struct Claims {
+pub struct AccessTokenClaims {
     sub: String,
-    roles: Vec<Roles>,
+    roles: Vec<String>,
     iat: usize,
     exp: usize,
 }
 
-impl Claims {
-    pub fn new(user_model: UsersModel, roles_model: Vec<RolesModel>) -> Claims {
-        let now = OffsetDateTime::now_utc();
-        let iat = now.unix_timestamp();
-        let exp = (now + Duration::days(30)).unix_timestamp();
-        let sub = user_model.username.clone();
-        let roles: Vec<Roles> = roles_model
+impl JwtToken for AccessTokenClaims {}
+
+impl AccessTokenClaims {
+    pub fn new(
+        username: &str,
+        roles_model: &Vec<roles::Model>,
+        from_time: OffsetDateTime,
+    ) -> AccessTokenClaims {
+        let iat = from_time.unix_timestamp();
+        let exp = (from_time + Duration::minutes(5)).unix_timestamp() as usize;
+        let roles: Vec<String> = roles_model
             .iter()
-            .map(|role_model| {
-                return if role_model.name == "ADMIN" {
-                    Roles::Admin
-                } else {
-                    Roles::Unknown
-                };
-            })
+            .map(|role_model| String::from(&role_model.name))
             .collect();
-        Claims {
-            sub,
+        AccessTokenClaims {
+            sub: String::from(username),
             roles,
             iat: iat as usize,
-            exp: exp as usize,
+            exp,
         }
     }
 }
 
-pub fn generate_token(claims: Claims) -> String {
-    // TODO: move to environment variables
-    let secret = "secret";
+#[derive(Serialize, Deserialize)]
+pub struct RefreshTokenClaims {
+    sub: String,
+    jti: String,
+    iat: usize,
+    exp: usize,
+}
+
+impl JwtToken for RefreshTokenClaims {}
+
+impl RefreshTokenClaims {
+    pub fn new(username: &str, jti: &str, from_time: OffsetDateTime) -> RefreshTokenClaims {
+        let iat = from_time.unix_timestamp();
+        let exp = (from_time + Duration::days(30)).unix_timestamp() as usize;
+        RefreshTokenClaims {
+            sub: String::from(username),
+            jti: String::from(jti),
+            iat: iat as usize,
+            exp,
+        }
+    }
+}
+
+pub fn generate_token<T: JwtToken + Serialize>(claims: T) -> String {
+    let secret = std::env::var("JWT_SECRET").unwrap();
     jsonwebtoken::encode(
         &Header::default(),
         &claims,

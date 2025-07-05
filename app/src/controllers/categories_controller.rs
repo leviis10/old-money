@@ -1,11 +1,14 @@
 use crate::AppState;
-use crate::dto::request::categories_dto::{
-    create_category_request::CreateCategoryRequest, update_category_request::UpdateCategoryRequest,
+use crate::dto::request::categories_dto::create_category_request::CreateCategoryRequest;
+use crate::dto::request::categories_dto::update_category_request::UpdateCategoryRequest;
+use crate::dto::response::categories_dto::create_category_response::{
+    CreateCategoryResponse, CreateCategoryResponseBuilder,
 };
-use crate::dto::response::categories_dto::{
-    create_category_response::{CreateCategoryResponse, CreateCategoryResponseBuilder},
-    get_category_response::{GetCategoryResponse, GetCategoryResponseBuilder},
-    update_category_response::{UpdateCategoryResponse, UpdateCategoryResponseBuilder},
+use crate::dto::response::categories_dto::get_category_response::{
+    GetCategoryResponse, GetCategoryResponseBuilder,
+};
+use crate::dto::response::categories_dto::update_category_response::{
+    UpdateCategoryResponse, UpdateCategoryResponseBuilder,
 };
 use crate::dto::response::global::success_response::{Meta, SuccessResponse};
 use crate::entities::categories;
@@ -54,7 +57,7 @@ pub async fn create(
     Json(payload): Json<CreateCategoryRequest>,
 ) -> (StatusCode, SuccessResponse<CreateCategoryResponse>) {
     let new_category = categories::ActiveModel {
-        name: ActiveValue::Set(payload.name.clone()),
+        name: ActiveValue::Set(String::from(&payload.name)),
         ..Default::default()
     };
     let db_response = Categories::insert(new_category)

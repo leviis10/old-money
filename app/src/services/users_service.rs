@@ -13,18 +13,13 @@ pub async fn create(
     let user_model = users_repository::create_manual(&txn, new_user).await;
 
     for role in roles.iter() {
-        match role {
-            Roles::Unknown => continue,
-            _ => {
-                let role_model = roles_service::find_by_name(&txn, role).await;
+        let role_model = roles_service::find_by_name(&txn, role).await;
 
-                let new_user_role = user_roles::ActiveModel {
-                    user_id: ActiveValue::Set(user_model.id),
-                    role_id: ActiveValue::Set(role_model.id),
-                };
-                user_roles_service::insert_manual(&txn, new_user_role).await;
-            }
-        }
+        let new_user_role = user_roles::ActiveModel {
+            user_id: ActiveValue::Set(user_model.id),
+            role_id: ActiveValue::Set(role_model.id),
+        };
+        user_roles_service::insert_manual(&txn, new_user_role).await;
     }
 
     txn.commit().await.unwrap();

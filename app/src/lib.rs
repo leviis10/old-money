@@ -11,10 +11,10 @@ use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
 use tracing::Level;
 
+mod controllers;
 mod dto;
 mod entities;
 mod enums;
-mod controllers;
 mod repositories;
 mod routes;
 mod services;
@@ -26,14 +26,18 @@ struct AppState {
 
 #[tokio::main]
 async fn start() -> Result<(), Box<dyn Error>> {
+    let db_uri = std::env::var("DB_URI").unwrap();
+    let timeout_duration: u64 = std::env::var("TIMEOUT_DURATION").unwrap().parse().unwrap();
+    let port = std::env::var("PORT").unwrap();
+    let address = format!("0.0.0.0:{port}");
+
     tracing_subscriber::fmt()
         .with_max_level(Level::DEBUG)
         .with_test_writer()
         .init();
 
     let shared_state = Arc::new(AppState {
-        // TODO: move it to the environment variables
-        db: Database::connect("postgres://postgres:password@localhost:5432/old_money").await?,
+        db: Database::connect(db_uri).await?,
     });
 
     let app = Router::new()
@@ -46,16 +50,14 @@ async fn start() -> Result<(), Box<dyn Error>> {
                         .make_span_with(DefaultMakeSpan::new().include_headers(true))
                         .on_response(DefaultOnResponse::new().include_headers(true)),
                 )
-                // TODO: move to environment variables
-                .layer(TimeoutLayer::new(Duration::from_secs(60)))
+                .layer(TimeoutLayer::new(Duration::from_secs(timeout_duration)))
                 .compression()
                 .decompression()
                 .set_x_request_id(MakeRequestUuid)
                 .propagate_x_request_id(),
         );
 
-    // TODO: move to environment variables
-    let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    let listener = TcpListener::bind(address).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 
     Ok(())
