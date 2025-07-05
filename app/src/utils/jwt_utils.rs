@@ -39,6 +39,7 @@ impl Claims {
 }
 
 pub fn generate_token(claims: Claims) -> String {
+    // TODO: move to environment variables
     let secret = "secret";
     jsonwebtoken::encode(
         &Header::default(),

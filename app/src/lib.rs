@@ -32,6 +32,7 @@ async fn start() -> Result<(), Box<dyn Error>> {
         .init();
 
     let shared_state = Arc::new(AppState {
+        // TODO: move it to the environment variables
         db: Database::connect("postgres://postgres:password@localhost:5432/old_money").await?,
     });
 
@@ -45,6 +46,7 @@ async fn start() -> Result<(), Box<dyn Error>> {
                         .make_span_with(DefaultMakeSpan::new().include_headers(true))
                         .on_response(DefaultOnResponse::new().include_headers(true)),
                 )
+                // TODO: move to environment variables
                 .layer(TimeoutLayer::new(Duration::from_secs(60)))
                 .compression()
                 .decompression()
@@ -52,6 +54,7 @@ async fn start() -> Result<(), Box<dyn Error>> {
                 .propagate_x_request_id(),
         );
 
+    // TODO: move to environment variables
     let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
 
