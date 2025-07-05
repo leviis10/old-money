@@ -1,4 +1,4 @@
-use crate::{AppState, handlers};
+use crate::{AppState, controllers};
 use axum::Router;
 use axum::routing::get;
 use std::sync::Arc;
@@ -25,5 +25,5 @@ pub fn register() -> Router<Arc<AppState>> {
         .nest("/api/v1/users", users_routes::register())
         .nest("/api/v1/budget-config", budget_config_routes::register())
         .nest("/api/v1/user-roles", user_roles_routes::register())
-        .fallback(handlers::global_handlers::not_found)
+        .fallback(controllers::global_controllers::not_found)
 }

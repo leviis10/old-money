@@ -1,14 +1,9 @@
 use crate::entities::roles::Model as RolesModel;
 use crate::entities::users::Model as UsersModel;
+use crate::enums::roles::Roles;
 use jsonwebtoken::{EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 use time::{Duration, OffsetDateTime};
-
-#[derive(Serialize, Deserialize)]
-enum Roles {
-    ADMIN,
-    UNKNOWN,
-}
 
 #[derive(Serialize, Deserialize)]
 pub struct Claims {
@@ -19,7 +14,7 @@ pub struct Claims {
 }
 
 impl Claims {
-    pub fn new(user_model: &UsersModel, roles_model: &Vec<RolesModel>) -> Claims {
+    pub fn new(user_model: UsersModel, roles_model: Vec<RolesModel>) -> Claims {
         let now = OffsetDateTime::now_utc();
         let iat = now.unix_timestamp();
         let exp = (now + Duration::days(30)).unix_timestamp();
@@ -28,9 +23,9 @@ impl Claims {
             .iter()
             .map(|role_model| {
                 return if role_model.name == "ADMIN" {
-                    Roles::ADMIN
+                    Roles::Admin
                 } else {
-                    Roles::UNKNOWN
+                    Roles::Unknown
                 };
             })
             .collect();

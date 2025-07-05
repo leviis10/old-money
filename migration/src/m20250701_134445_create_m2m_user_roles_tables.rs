@@ -16,8 +16,14 @@ impl MigrationTrait for Migration {
                     .col(string(Users::Username))
                     .col(string(Users::Email))
                     .col(string(Users::Password))
-                    .col(timestamp_with_time_zone(Users::CreatedAt).default(Expr::current_timestamp()))
-                    .col(timestamp_with_time_zone(Users::UpdatedAt).default(Expr::current_timestamp()))
+                    .col(
+                        timestamp_with_time_zone(Users::CreatedAt)
+                            .default(Expr::current_timestamp()),
+                    )
+                    .col(
+                        timestamp_with_time_zone(Users::UpdatedAt)
+                            .default(Expr::current_timestamp()),
+                    )
                     .col(timestamp_with_time_zone_null(Users::DeletedAt))
                     .to_owned(),
             )
@@ -31,8 +37,14 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(pk_auto(Roles::Id))
                     .col(string(Roles::Name))
-                    .col(timestamp_with_time_zone(Roles::CreatedAt).default(Expr::current_timestamp()))
-                    .col(timestamp_with_time_zone(Roles::UpdatedAt).default(Expr::current_timestamp()))
+                    .col(
+                        timestamp_with_time_zone(Roles::CreatedAt)
+                            .default(Expr::current_timestamp()),
+                    )
+                    .col(
+                        timestamp_with_time_zone(Roles::UpdatedAt)
+                            .default(Expr::current_timestamp()),
+                    )
                     .col(timestamp_with_time_zone_null(Roles::DeletedAt))
                     .to_owned(),
             )
@@ -50,7 +62,7 @@ impl MigrationTrait for Migration {
                         Index::create()
                             .name("pk-user_roles")
                             .col(UserRoles::UserId)
-                            .col(UserRoles::RoleId)
+                            .col(UserRoles::RoleId),
                     )
                     .foreign_key(
                         ForeignKey::create()
@@ -58,7 +70,7 @@ impl MigrationTrait for Migration {
                             .from(UserRoles::Table, UserRoles::UserId)
                             .to(Users::Table, Users::Id)
                             .on_delete(ForeignKeyAction::Cascade)
-                            .on_update(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade),
                     )
                     .foreign_key(
                         ForeignKey::create()
@@ -66,7 +78,7 @@ impl MigrationTrait for Migration {
                             .from(UserRoles::Table, UserRoles::RoleId)
                             .to(Roles::Table, Roles::Id)
                             .on_delete(ForeignKeyAction::Cascade)
-                            .on_update(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade),
                     )
                     .to_owned(),
             )
@@ -80,17 +92,17 @@ impl MigrationTrait for Migration {
         manager
             .drop_table(Table::drop().table(UserRoles::Table).to_owned())
             .await?;
-        
+
         // drop `Roles` table
         manager
             .drop_table(Table::drop().table(Roles::Table).to_owned())
             .await?;
-        
+
         // drop `Users` table
         manager
             .drop_table(Table::drop().table(Users::Table).to_owned())
             .await?;
-        
+
         Ok(())
     }
 }
@@ -104,7 +116,7 @@ enum Users {
     Password,
     CreatedAt,
     UpdatedAt,
-    DeletedAt
+    DeletedAt,
 }
 
 #[derive(DeriveIden)]
@@ -114,12 +126,12 @@ enum Roles {
     Name,
     CreatedAt,
     UpdatedAt,
-    DeletedAt
+    DeletedAt,
 }
 
 #[derive(DeriveIden)]
 enum UserRoles {
     Table,
     UserId,
-    RoleId
+    RoleId,
 }

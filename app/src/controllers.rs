@@ -1,0 +1,10 @@
+pub mod auth_controllers;
+pub mod budget_config_controllers;
+pub mod budgets_controllers;
+pub mod categories_controllers;
+pub mod global_controllers;
+pub mod roles_controllers;
+pub mod transactions_controllers;
+pub mod user_roles_controllers;
+pub mod users_controllers;
+pub mod wallets_controllers;

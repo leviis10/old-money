@@ -1,5 +1,7 @@
 use sea_orm_migration::prelude::*;
-use sea_orm_migration::schema::{pk_auto, string, timestamp_with_time_zone, timestamp_with_time_zone_null};
+use sea_orm_migration::schema::{
+    pk_auto, string, timestamp_with_time_zone, timestamp_with_time_zone_null,
+};
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -14,13 +16,19 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(pk_auto(Categories::Id))
                     .col(string(Categories::Name))
-                    .col(timestamp_with_time_zone(Categories::CreatedAt).default(Expr::current_timestamp()))
-                    .col(timestamp_with_time_zone(Categories::UpdatedAt).default(Expr::current_timestamp()))
+                    .col(
+                        timestamp_with_time_zone(Categories::CreatedAt)
+                            .default(Expr::current_timestamp()),
+                    )
+                    .col(
+                        timestamp_with_time_zone(Categories::UpdatedAt)
+                            .default(Expr::current_timestamp()),
+                    )
                     .col(timestamp_with_time_zone_null(Categories::DeletedAt))
                     .to_owned(),
             )
             .await?;
-        
+
         Ok(())
     }
 
@@ -28,7 +36,7 @@ impl MigrationTrait for Migration {
         manager
             .drop_table(Table::drop().table(Categories::Table).to_owned())
             .await?;
-        
+
         Ok(())
     }
 }

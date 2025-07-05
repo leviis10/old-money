@@ -13,8 +13,11 @@ use tracing::Level;
 
 mod dto;
 mod entities;
-mod handlers;
+mod enums;
+mod controllers;
+mod repositories;
 mod routes;
+mod services;
 mod utils;
 
 struct AppState {
