@@ -3,6 +3,7 @@
 pub mod prelude;
 
 pub mod categories;
+pub mod refresh_tokens;
 pub mod roles;
 pub mod user_roles;
 pub mod users;

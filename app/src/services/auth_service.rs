@@ -1,8 +1,8 @@
 use crate::dto::request::auth_dto::create_user_request::CreateUserRequest;
 use crate::dto::request::auth_dto::login_user_request::LoginUserRequest;
-use crate::entities::users;
+use crate::entities::{roles, users};
 use crate::enums::roles::Roles;
-use crate::services::users_service;
+use crate::services::{refresh_tokens_service, users_service};
 use crate::utils::jwt_utils;
 use crate::utils::jwt_utils::{AccessTokenClaims, RefreshTokenClaims};
 use argon2::password_hash::SaltString;
@@ -10,6 +10,8 @@ use argon2::password_hash::rand_core::OsRng;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use sea_orm::{ActiveValue, DatabaseConnection};
 use time::OffsetDateTime;
+use uuid::Uuid;
+use crate::dto::request::auth_dto::refresh_token_request::RefreshTokenRequest;
 
 pub async fn register(
     db_connection: &DatabaseConnection,
@@ -48,9 +50,64 @@ pub async fn login(
     }
 
     let now = OffsetDateTime::now_utc();
-    let access_token =
-        jwt_utils::generate_token(AccessTokenClaims::new(&found_user.username, &roles, now));
-    let refresh_token =
-        jwt_utils::generate_token(RefreshTokenClaims::new(&found_user.username, "jti", now));
+    let (access_token, refresh_token) = generate_token(db, &found_user, &roles, now).await;
+
     Ok((access_token, refresh_token))
+}
+
+pub async fn refresh(db: &DatabaseConnection, request: RefreshTokenRequest) -> (String, String) {
+    let refresh_token_claims = RefreshTokenClaims::parse(&request.refresh_token);
+
+    let refresh_token_expiration = OffsetDateTime::from_unix_timestamp(refresh_token_claims.exp as i64).unwrap();
+    let refresh_token_model = refresh_tokens_service::find_by_pk_and_deleted_at_is_not_null_and_expires_at_less_than(db, refresh_token_claims.jti, refresh_token_expiration).await;
+
+    match RefreshTokenClaims::compare_hash(request.refresh_token.as_bytes(), &refresh_token_model.hashed_token) {
+        Ok(_) => {
+            refresh_tokens_service::revoke_using_model(db, refresh_token_model).await;
+
+            let (found_user, roles) = users_service::find_by_username(db, &refresh_token_claims.sub).await;
+            let now = OffsetDateTime::now_utc();
+            let (access_token, refresh_token) = generate_token(db, &found_user, &roles, now).await;
+
+            (access_token, refresh_token)
+        },
+        Err(_) => (String::from("INVALID"), String::from("INVALID"))
+    }
+}
+
+async fn generate_token(
+    db: &DatabaseConnection,
+    found_user: &users::Model,
+    roles: &Vec<roles::Model>,
+    now: OffsetDateTime,
+) -> (String, String) {
+    let access_token = generate_access_token(&found_user.username, &roles, &now);
+    let refresh_token = generate_refresh_token(&db, &found_user, &now).await;
+
+    (access_token, refresh_token)
+}
+
+fn generate_access_token(
+    username: &str,
+    roles: &Vec<roles::Model>,
+    now: &OffsetDateTime,
+) -> String {
+    jwt_utils::generate_token(AccessTokenClaims::new(username, &roles, *now))
+}
+
+async fn generate_refresh_token(
+    db: &DatabaseConnection,
+    found_user: &users::Model,
+    now: &OffsetDateTime,
+) -> String {
+    let uuid = Uuid::now_v7();
+
+    let (refresh_token_claims, expires_at) =
+        RefreshTokenClaims::new(&found_user.username, uuid, *now);
+    let refresh_token = jwt_utils::generate_token(refresh_token_claims);
+    let hashed_refresh_token = RefreshTokenClaims::hash(refresh_token.as_bytes());
+
+    refresh_tokens_service::create(db, uuid, hashed_refresh_token, expires_at, found_user.id).await;
+
+    refresh_token
 }

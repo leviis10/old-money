@@ -14,6 +14,8 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use std::sync::Arc;
 use time::OffsetDateTime;
+use crate::dto::request::auth_dto::refresh_token_request::RefreshTokenRequest;
+use crate::dto::response::auth_dto::refresh_token_response::{RefreshTokenResponse, RefreshTokenResponseBuilder};
 
 pub async fn register(
     State(state): State<Arc<AppState>>,
@@ -65,4 +67,17 @@ pub async fn login(
             (StatusCode::BAD_REQUEST, response)
         }
     }
+}
+
+pub async fn refresh(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<RefreshTokenRequest>
+) -> (StatusCode, SuccessResponse<RefreshTokenResponse>) {
+    let (access_token, refresh_token) = auth_service::refresh(&state.db, payload).await;
+    let response = RefreshTokenResponseBuilder::default()
+        .access_token(access_token)
+        .refresh_token(refresh_token)
+        .build()
+        .unwrap();
+    (StatusCode::OK, SuccessResponse::new("Successfully refresh token", response))
 }
