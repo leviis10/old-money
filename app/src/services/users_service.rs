@@ -34,6 +34,9 @@ pub async fn find_by_username(
     users_repository::find_by_username(db, username).await
 }
 
-pub async fn find_by_pk(db: &DatabaseConnection, user_id: i32) -> (users::Model, Vec<roles::Model>) {
+pub async fn find_by_pk(
+    db: &DatabaseConnection,
+    user_id: i32,
+) -> (users::Model, Vec<roles::Model>) {
     users_repository::find_by_pk(db, user_id).await
 }

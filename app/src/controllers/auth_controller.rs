@@ -1,11 +1,15 @@
 use crate::AppState;
 use crate::dto::request::auth_dto::create_user_request::CreateUserRequest;
 use crate::dto::request::auth_dto::login_user_request::LoginUserRequest;
+use crate::dto::request::auth_dto::refresh_token_request::RefreshTokenRequest;
 use crate::dto::response::auth_dto::create_user_response::{
     CreateUserResponse, CreateUserResponseBuilder,
 };
 use crate::dto::response::auth_dto::login_user_response::{
     LoginUserResponse, LoginUserResponseBuilder,
+};
+use crate::dto::response::auth_dto::refresh_token_response::{
+    RefreshTokenResponse, RefreshTokenResponseBuilder,
 };
 use crate::dto::response::global::success_response::SuccessResponse;
 use crate::services::auth_service;
@@ -14,8 +18,6 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use std::sync::Arc;
 use time::OffsetDateTime;
-use crate::dto::request::auth_dto::refresh_token_request::RefreshTokenRequest;
-use crate::dto::response::auth_dto::refresh_token_response::{RefreshTokenResponse, RefreshTokenResponseBuilder};
 
 pub async fn register(
     State(state): State<Arc<AppState>>,
@@ -71,7 +73,7 @@ pub async fn login(
 
 pub async fn refresh(
     State(state): State<Arc<AppState>>,
-    Json(payload): Json<RefreshTokenRequest>
+    Json(payload): Json<RefreshTokenRequest>,
 ) -> (StatusCode, SuccessResponse<RefreshTokenResponse>) {
     let (access_token, refresh_token) = auth_service::refresh(&state.db, payload).await;
     let response = RefreshTokenResponseBuilder::default()
@@ -79,5 +81,8 @@ pub async fn refresh(
         .refresh_token(refresh_token)
         .build()
         .unwrap();
-    (StatusCode::OK, SuccessResponse::new("Successfully refresh token", response))
+    (
+        StatusCode::OK,
+        SuccessResponse::new("Successfully refresh token", response),
+    )
 }
