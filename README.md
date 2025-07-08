@@ -10,7 +10,7 @@ This project mainly for my educational purposes but this project can be extended
 - [x] Compression & Decompression (gzip, deflate, br, zstd)
 - [x] Standardize Success Response
 - [x] Authentication (JWT, RBAC, Refresh Token)
-- [ ] Optimize refresh token implementation (using SHA-256 for hash, use id instead of username in token subject)
+- [x] Optimize refresh token implementation (using SHA-256 for hash, use id instead of username in token subject)
 - [ ] Request Body Validation
 - [ ] Cors Security
 - [ ] Error Handling
