@@ -58,11 +58,12 @@ pub async fn login(
 pub async fn refresh(db: &DatabaseConnection, request: RefreshTokenRequest) -> (String, String) {
     let refresh_token_claims = RefreshTokenClaims::parse(&request.refresh_token);
 
+    let hashed_token = RefreshTokenClaims::hash(request.refresh_token.as_bytes());
     let refresh_token_expiration = OffsetDateTime::from_unix_timestamp(refresh_token_claims.exp as i64).unwrap();
-    let refresh_token_model = refresh_tokens_service::find_by_pk_and_deleted_at_is_not_null_and_expires_at_less_than(db, refresh_token_claims.jti, refresh_token_expiration).await;
-
-    match RefreshTokenClaims::compare_hash(request.refresh_token.as_bytes(), &refresh_token_model.hashed_token) {
-        Ok(_) => {
+    let refresh_token_model = refresh_tokens_service::find_by_pk_and_hashed_token_and_user_id_and_expires_at_greater_than_and_deleted_at_is_null(db, refresh_token_claims.jti, &hashed_token, refresh_token_claims.sub, refresh_token_expiration).await;
+    
+    match refresh_token_model {
+        Some(refresh_token_model) => {
             refresh_tokens_service::revoke_using_model(db, refresh_token_model).await;
 
             let (found_user, roles) = users_service::find_by_pk(db, refresh_token_claims.sub).await;
@@ -71,7 +72,7 @@ pub async fn refresh(db: &DatabaseConnection, request: RefreshTokenRequest) -> (
 
             (access_token, refresh_token)
         },
-        Err(_) => (String::from("INVALID"), String::from("INVALID"))
+        None => (String::from("INVALID"), String::from("INVALID"))
     }
 }
 

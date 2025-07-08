@@ -1,5 +1,4 @@
 use crate::entities::roles;
-use argon2::{password_hash, Argon2, PasswordHash, PasswordVerifier};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -81,11 +80,6 @@ impl RefreshTokenClaims {
         )
         .unwrap()
         .claims
-    }
-
-    pub fn compare_hash(refresh_token: &[u8], hashed_refresh_token: &str) -> password_hash::errors::Result<()> {
-        let parsed_hash = PasswordHash::new(hashed_refresh_token)?;
-        Argon2::default().verify_password(refresh_token, &parsed_hash)
     }
 }
 

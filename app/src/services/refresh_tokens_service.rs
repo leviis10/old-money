@@ -22,17 +22,6 @@ pub async fn create(
     refresh_tokens_repository::create(db, new_refresh_token).await
 }
 
-pub async fn find_by_pk_and_deleted_at_is_not_null_and_expires_at_less_than(
-    db: &DatabaseConnection,
-    jti: Uuid,
-    expires_at: OffsetDateTime,
-) -> refresh_tokens::Model {
-    refresh_tokens_repository::find_by_pk_and_deleted_at_is_not_null_and_expires_at_less_than(
-        db, jti, expires_at,
-    )
-    .await
-}
-
 pub async fn revoke_using_model(db: &DatabaseConnection, refresh_token_model: refresh_tokens::Model) {
     let updated_refresh_token = refresh_tokens::ActiveModel {
         jti: ActiveValue::Unchanged(refresh_token_model.jti),
@@ -40,4 +29,8 @@ pub async fn revoke_using_model(db: &DatabaseConnection, refresh_token_model: re
         ..Default::default()
     };
     refresh_tokens_repository::revoke_using_model(db, updated_refresh_token).await;
+}
+
+pub async fn find_by_pk_and_hashed_token_and_user_id_and_expires_at_greater_than_and_deleted_at_is_null(db: &DatabaseConnection, jti: Uuid, hashed_token: &str, user_id: i32, expires_at: OffsetDateTime) -> Option<refresh_tokens::Model> {
+    refresh_tokens_repository::find_by_pk_and_hashed_token_and_user_id_and_expires_at_greater_than_and_deleted_at_is_null(db, jti, hashed_token, user_id, expires_at).await
 }
