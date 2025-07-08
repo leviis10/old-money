@@ -3,14 +3,17 @@ use crate::repositories::refresh_tokens_repository;
 use sea_orm::{ActiveValue, DatabaseConnection};
 use time::OffsetDateTime;
 use uuid::Uuid;
+use crate::utils::jwt_utils::RefreshTokenClaims;
 
 pub async fn create(
     db: &DatabaseConnection,
     jti: Uuid,
-    hashed_token: String,
+    refresh_token: &str,
     expires_at: OffsetDateTime,
     user_id: i32,
 ) -> refresh_tokens::Model {
+    let hashed_token = RefreshTokenClaims::hash(refresh_token.as_bytes());
+    
     let new_refresh_token = refresh_tokens::ActiveModel {
         jti: ActiveValue::Set(jti),
         hashed_token: ActiveValue::Set(hashed_token),

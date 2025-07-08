@@ -50,7 +50,9 @@ pub async fn login(
     }
 
     let now = OffsetDateTime::now_utc();
-    let (access_token, refresh_token) = generate_token(db, found_user.id, &roles, now).await;
+    let new_refresh_token_jti = Uuid::now_v7();
+    let (access_token, refresh_token, expires_at) = generate_token(new_refresh_token_jti, found_user.id, &roles, now).await;
+    refresh_tokens_service::create(db, new_refresh_token_jti, &refresh_token, expires_at, found_user.id).await;
 
     Ok((access_token, refresh_token))
 }
@@ -68,7 +70,9 @@ pub async fn refresh(db: &DatabaseConnection, request: RefreshTokenRequest) -> (
 
             let (found_user, roles) = users_service::find_by_pk(db, refresh_token_claims.sub).await;
             let now = OffsetDateTime::now_utc();
-            let (access_token, refresh_token) = generate_token(db, found_user.id, &roles, now).await;
+            let new_refresh_token_jti = Uuid::now_v7();
+            let (access_token, refresh_token, expires_at) = generate_token(new_refresh_token_jti, found_user.id, &roles, now).await;
+            refresh_tokens_service::create(db, new_refresh_token_jti, &refresh_token, expires_at, found_user.id).await;
 
             (access_token, refresh_token)
         },
@@ -77,15 +81,15 @@ pub async fn refresh(db: &DatabaseConnection, request: RefreshTokenRequest) -> (
 }
 
 async fn generate_token(
-    db: &DatabaseConnection,
+    jti: Uuid,
     user_id: i32,
     roles: &Vec<roles::Model>,
     now: OffsetDateTime,
-) -> (String, String) {
+) -> (String, String, OffsetDateTime) {
     let access_token = generate_access_token(user_id, &roles, &now);
-    let refresh_token = generate_refresh_token(&db, user_id, &now).await;
+    let (refresh_token, expires_at) = generate_refresh_token(jti, user_id, &now).await;
 
-    (access_token, refresh_token)
+    (access_token, refresh_token, expires_at)
 }
 
 fn generate_access_token(
@@ -97,18 +101,13 @@ fn generate_access_token(
 }
 
 async fn generate_refresh_token(
-    db: &DatabaseConnection,
+    jti: Uuid,
     user_id: i32,
     now: &OffsetDateTime,
-) -> String {
-    let uuid = Uuid::now_v7();
-
+) -> (String, OffsetDateTime) {
     let (refresh_token_claims, expires_at) =
-        RefreshTokenClaims::new(user_id, uuid, *now);
+        RefreshTokenClaims::new(user_id, jti, *now);
     let refresh_token = jwt_utils::generate_token(refresh_token_claims);
-    let hashed_refresh_token = RefreshTokenClaims::hash(refresh_token.as_bytes());
 
-    refresh_tokens_service::create(db, uuid, hashed_refresh_token, expires_at, user_id).await;
-
-    refresh_token
+    (refresh_token, expires_at)
 }
