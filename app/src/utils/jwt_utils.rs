@@ -11,7 +11,7 @@ pub trait JwtToken {}
 
 #[derive(Serialize, Deserialize)]
 pub struct AccessTokenClaims {
-    sub: String,
+    sub: i32,
     roles: Vec<String>,
     iat: usize,
     exp: usize,
@@ -21,7 +21,7 @@ impl JwtToken for AccessTokenClaims {}
 
 impl AccessTokenClaims {
     pub fn new(
-        username: &str,
+        user_id: i32,
         roles_model: &Vec<roles::Model>,
         from_time: OffsetDateTime,
     ) -> AccessTokenClaims {
@@ -32,7 +32,7 @@ impl AccessTokenClaims {
             .map(|role_model| String::from(&role_model.name))
             .collect();
         AccessTokenClaims {
-            sub: String::from(username),
+            sub: user_id,
             roles,
             iat: iat as usize,
             exp,
@@ -42,7 +42,7 @@ impl AccessTokenClaims {
 
 #[derive(Serialize, Deserialize)]
 pub struct RefreshTokenClaims {
-    pub sub: String,
+    pub sub: i32,
     pub jti: Uuid,
     iat: usize,
     pub exp: usize,
@@ -52,7 +52,7 @@ impl JwtToken for RefreshTokenClaims {}
 
 impl RefreshTokenClaims {
     pub fn new(
-        username: &str,
+        user_id: i32,
         jti: Uuid,
         from_time: OffsetDateTime,
     ) -> (RefreshTokenClaims, OffsetDateTime) {
@@ -60,7 +60,7 @@ impl RefreshTokenClaims {
         let expires_at = from_time + Duration::days(30);
         let expires_at_timestamp = expires_at.unix_timestamp() as usize;
         let refresh_token_claims = RefreshTokenClaims {
-            sub: String::from(username),
+            sub: user_id,
             jti,
             iat: iat as usize,
             exp: expires_at_timestamp,

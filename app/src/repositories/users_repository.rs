@@ -25,3 +25,14 @@ pub async fn find_by_username(
 
     found_users.get(0).unwrap().clone()
 }
+
+pub async fn find_by_pk(db: &DatabaseConnection, user_id: i32) -> (users::Model, Vec<roles::Model>) {
+    let found_users = Users::find()
+        .filter(users::Column::Id.eq(user_id))
+        .find_with_related(roles::Entity)
+        .all(db)
+        .await
+        .unwrap();
+
+    found_users.get(0).unwrap().clone()
+}
