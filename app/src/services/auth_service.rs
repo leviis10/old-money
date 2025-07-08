@@ -9,29 +9,29 @@ use crate::utils::jwt_utils::{AccessTokenClaims, RefreshTokenClaims};
 use argon2::password_hash::SaltString;
 use argon2::password_hash::rand_core::OsRng;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
-use sea_orm::{ActiveValue, DatabaseConnection};
+use sea_orm::DatabaseConnection;
 use time::OffsetDateTime;
 use uuid::Uuid;
 
 pub async fn register(
     db_connection: &DatabaseConnection,
-    payload: &CreateUserRequest,
+    request: &CreateUserRequest,
 ) -> users::Model {
     let argon2 = Argon2::default();
     let salt = SaltString::generate(&mut OsRng);
     let hashed_password = argon2
-        .hash_password(payload.password.as_bytes(), &salt)
+        .hash_password(request.password.as_bytes(), &salt)
         .unwrap()
         .to_string();
 
-    let new_user = users::ActiveModel {
-        username: ActiveValue::Set(String::from(&payload.username)),
-        email: ActiveValue::Set(String::from(&payload.email)),
-        password: ActiveValue::Set(hashed_password),
-        ..Default::default()
-    };
-
-    users_service::create(db_connection, new_user, vec![Roles::Admin]).await
+    users_service::create(
+        db_connection,
+        &request.username,
+        &request.email,
+        &hashed_password,
+        vec![Roles::Admin],
+    )
+    .await
 }
 
 pub async fn login(

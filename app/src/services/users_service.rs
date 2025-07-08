@@ -6,11 +6,19 @@ use sea_orm::{ActiveValue, DatabaseConnection, TransactionTrait};
 
 pub async fn create(
     database_connection: &DatabaseConnection,
-    new_user: users::ActiveModel,
+    new_user_username: &str,
+    new_user_email: &str,
+    new_user_hashed_password: &str,
     roles: Vec<Roles>,
 ) -> users::Model {
     let txn = database_connection.begin().await.unwrap();
-    let user_model = users_repository::create_manual(&txn, new_user).await;
+    let user_model = users_repository::create_manual(
+        &txn,
+        new_user_username,
+        new_user_email,
+        new_user_hashed_password,
+    )
+    .await;
 
     for role in roles.iter() {
         let role_model = roles_service::find_by_name(&txn, role).await;
