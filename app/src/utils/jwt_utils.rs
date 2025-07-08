@@ -1,9 +1,8 @@
 use crate::entities::roles;
-use argon2::password_hash::SaltString;
-use argon2::password_hash::rand_core::OsRng;
-use argon2::{password_hash, Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
+use argon2::{password_hash, Argon2, PasswordHash, PasswordVerifier};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
@@ -70,12 +69,7 @@ impl RefreshTokenClaims {
     }
 
     pub fn hash(refresh_token: &[u8]) -> String {
-        let salt = SaltString::generate(&mut OsRng);
-        let argon2 = Argon2::default();
-        argon2
-            .hash_password(refresh_token, &salt)
-            .unwrap()
-            .to_string()
+        hex::encode(Sha256::digest(refresh_token))
     }
 
     pub fn parse(refresh_token: &str) -> RefreshTokenClaims {
