@@ -1,7 +1,7 @@
 use crate::AppState;
-use crate::dto::request::auth_dto::create_user_request::CreateUserRequest;
 use crate::dto::request::auth_dto::login_user_request::LoginUserRequest;
 use crate::dto::request::auth_dto::refresh_token_request::RefreshTokenRequest;
+use crate::dto::request::auth_dto::register_user_request::RegisterUserRequest;
 use crate::dto::response::auth_dto::create_user_response::{
     CreateUserResponse, CreateUserResponseBuilder,
 };
@@ -21,7 +21,7 @@ use time::OffsetDateTime;
 
 pub async fn register(
     State(state): State<Arc<AppState>>,
-    Json(payload): Json<CreateUserRequest>,
+    Json(payload): Json<RegisterUserRequest>,
 ) -> (StatusCode, SuccessResponse<CreateUserResponse>) {
     let user_model = auth_service::register(&state.db, &payload).await;
 
@@ -45,30 +45,17 @@ pub async fn login(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<LoginUserRequest>,
 ) -> (StatusCode, SuccessResponse<LoginUserResponse>) {
-    match auth_service::login(&state.db, payload).await {
-        Ok((access_token, refresh_token)) => {
-            let response = SuccessResponse::new(
-                "Successfully logged in",
-                LoginUserResponseBuilder::default()
-                    .access_token(access_token)
-                    .refresh_token(refresh_token)
-                    .build()
-                    .unwrap(),
-            );
-            (StatusCode::OK, response)
-        }
-        Err(message) => {
-            let response = SuccessResponse::new(
-                &message,
-                LoginUserResponseBuilder::default()
-                    .access_token(&message)
-                    .refresh_token(&message)
-                    .build()
-                    .unwrap(),
-            );
-            (StatusCode::BAD_REQUEST, response)
-        }
-    }
+    let (access_token, refresh_token) = auth_service::login(&state.db, payload).await;
+
+    let response = SuccessResponse::new(
+        "Successfully logged in",
+        LoginUserResponseBuilder::default()
+            .access_token(access_token)
+            .refresh_token(refresh_token)
+            .build()
+            .unwrap(),
+    );
+    (StatusCode::OK, response)
 }
 
 pub async fn refresh(

@@ -1,23 +1,14 @@
 use crate::entities::prelude::Users;
 use crate::entities::{roles, users};
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, DatabaseConnection, DatabaseTransaction,
-    EntityTrait, QueryFilter,
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, DatabaseTransaction, EntityTrait,
+    QueryFilter,
 };
 
 pub async fn create_manual(
     txn: &DatabaseTransaction,
-    new_user_username: &str,
-    new_user_email: &str,
-    new_user_hashed_password: &str,
+    new_user: users::ActiveModel,
 ) -> users::Model {
-    let new_user = users::ActiveModel {
-        username: ActiveValue::Set(String::from(new_user_username)),
-        email: ActiveValue::Set(String::from(new_user_email)),
-        password: ActiveValue::Set(String::from(new_user_hashed_password)),
-        ..Default::default()
-    };
-
     new_user.insert(txn).await.unwrap()
 }
 
