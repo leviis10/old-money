@@ -23,8 +23,13 @@ impl AccessTokenClaims {
         roles_model: &Vec<roles::Model>,
         from_time: OffsetDateTime,
     ) -> AccessTokenClaims {
+        let access_token_expiration: i64 = std::env::var("ACCESS_TOKEN_EXPIRATION")
+            .unwrap()
+            .parse()
+            .unwrap();
         let iat = from_time.unix_timestamp();
-        let exp = (from_time + Duration::minutes(5)).unix_timestamp() as usize;
+        let exp =
+            (from_time + Duration::seconds(access_token_expiration)).unix_timestamp() as usize;
         let roles: Vec<String> = roles_model
             .iter()
             .map(|role_model| String::from(&role_model.name))
@@ -54,8 +59,12 @@ impl RefreshTokenClaims {
         jti: Uuid,
         from_time: OffsetDateTime,
     ) -> (RefreshTokenClaims, OffsetDateTime) {
+        let refresh_token_expiration: i64 = std::env::var("REFRESH_TOKEN_EXPIRATION")
+            .unwrap()
+            .parse()
+            .unwrap();
         let iat = from_time.unix_timestamp();
-        let expires_at = from_time + Duration::days(30);
+        let expires_at = from_time + Duration::seconds(refresh_token_expiration);
         let expires_at_timestamp = expires_at.unix_timestamp() as usize;
         let refresh_token_claims = RefreshTokenClaims {
             sub: user_id,

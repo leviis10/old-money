@@ -14,4 +14,4 @@ This project mainly for my educational purposes but this project can be extended
 - [ ] Request Body Validation
 - [ ] Cors Security
 - [ ] Error Handling
-- [ ] Add environment variables
+- [x] Add environment variables
