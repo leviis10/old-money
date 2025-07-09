@@ -13,5 +13,6 @@ This project mainly for my educational purposes but this project can be extended
 - [x] Optimize refresh token implementation (using SHA-256 for hash, use id instead of username in token subject)
 - [ ] Request Body Validation
 - [ ] Cors Security
-- [ ] Error Handling
+- [x] Error Handling
 - [x] Add environment variables
+- [ ] Add swagger documentation
