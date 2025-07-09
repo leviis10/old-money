@@ -1,10 +1,8 @@
-use derive_builder::Builder;
 use serde::Serialize;
 
-#[derive(Serialize, Builder)]
-#[builder(setter(into))]
+#[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LoginUserResponse {
-    access_token: String,
-    refresh_token: String,
+    pub access_token: String,
+    pub refresh_token: String,
 }

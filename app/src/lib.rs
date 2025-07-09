@@ -9,7 +9,7 @@ use tower_http::ServiceBuilderExt;
 use tower_http::request_id::MakeRequestUuid;
 use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
-use tracing::Level;
+use tracing_subscriber::EnvFilter;
 
 mod controllers;
 mod dto;
@@ -19,6 +19,7 @@ mod repositories;
 mod routes;
 mod services;
 mod utils;
+mod errors;
 
 struct AppState {
     db: DatabaseConnection,
@@ -26,19 +27,23 @@ struct AppState {
 
 #[tokio::main]
 async fn start() -> Result<(), Box<dyn Error>> {
-    let db_uri = std::env::var("DB_URI").unwrap();
-    let timeout_duration: u64 = std::env::var("TIMEOUT_DURATION").unwrap().parse().unwrap();
-    let port = std::env::var("PORT").unwrap();
-    let address = format!("0.0.0.0:{port}");
-
     tracing_subscriber::fmt()
-        .with_max_level(Level::DEBUG)
+        .with_env_filter(EnvFilter::from_default_env())
         .with_test_writer()
         .init();
 
+    tracing::info!("Starting the server");
+
+    let db_uri = std::env::var("DB_URI")?;
+    let timeout_duration: u64 = std::env::var("TIMEOUT_DURATION")?.parse()?;
+    let port = std::env::var("PORT")?;
+    let address = format!("0.0.0.0:{port}");
+
+    tracing::info!("Connecting to the database");
     let shared_state = Arc::new(AppState {
         db: Database::connect(db_uri).await?,
     });
+    tracing::info!("Connected to the database");
 
     let app = Router::new()
         .merge(routes::register())
@@ -57,8 +62,9 @@ async fn start() -> Result<(), Box<dyn Error>> {
                 .propagate_x_request_id(),
         );
 
-    let listener = TcpListener::bind(address).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    let listener = TcpListener::bind(&address).await?;
+    tracing::info!("Server started");
+    axum::serve(listener, app).await?;
 
     Ok(())
 }
@@ -67,6 +73,6 @@ pub fn main() {
     let result = start();
 
     if let Err(err) = result {
-        eprintln!("Error: {err}")
+        tracing::error!("Error: {err}");
     }
 }

@@ -1,4 +1,5 @@
 use crate::entities::roles;
+use crate::errors::AppError;
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -22,11 +23,8 @@ impl AccessTokenClaims {
         user_id: i32,
         roles_model: &Vec<roles::Model>,
         from_time: OffsetDateTime,
-    ) -> AccessTokenClaims {
-        let access_token_expiration: i64 = std::env::var("ACCESS_TOKEN_EXPIRATION")
-            .unwrap()
-            .parse()
-            .unwrap();
+    ) -> Result<AccessTokenClaims, AppError> {
+        let access_token_expiration: i64 = std::env::var("ACCESS_TOKEN_EXPIRATION")?.parse()?;
         let iat = from_time.unix_timestamp();
         let exp =
             (from_time + Duration::seconds(access_token_expiration)).unix_timestamp() as usize;
@@ -34,12 +32,14 @@ impl AccessTokenClaims {
             .iter()
             .map(|role_model| String::from(&role_model.name))
             .collect();
-        AccessTokenClaims {
+
+        let access_token = AccessTokenClaims {
             sub: user_id,
             roles,
             iat: iat as usize,
             exp,
-        }
+        };
+        Ok(access_token)
     }
 }
 
@@ -58,11 +58,8 @@ impl RefreshTokenClaims {
         user_id: i32,
         jti: Uuid,
         from_time: OffsetDateTime,
-    ) -> (RefreshTokenClaims, OffsetDateTime) {
-        let refresh_token_expiration: i64 = std::env::var("REFRESH_TOKEN_EXPIRATION")
-            .unwrap()
-            .parse()
-            .unwrap();
+    ) -> Result<(RefreshTokenClaims, OffsetDateTime), AppError> {
+        let refresh_token_expiration: i64 = std::env::var("REFRESH_TOKEN_EXPIRATION")?.parse()?;
         let iat = from_time.unix_timestamp();
         let expires_at = from_time + Duration::seconds(refresh_token_expiration);
         let expires_at_timestamp = expires_at.unix_timestamp() as usize;
@@ -73,31 +70,34 @@ impl RefreshTokenClaims {
             exp: expires_at_timestamp,
         };
 
-        (refresh_token_claims, expires_at)
+        Ok((refresh_token_claims, expires_at))
     }
 
     pub fn hash(refresh_token: &[u8]) -> String {
         hex::encode(Sha256::digest(refresh_token))
     }
 
-    pub fn parse(refresh_token: &str) -> RefreshTokenClaims {
-        let secret = std::env::var("JWT_SECRET").unwrap();
-        jsonwebtoken::decode::<RefreshTokenClaims>(
+    pub fn parse(refresh_token: &str) -> Result<RefreshTokenClaims, AppError> {
+        let secret = std::env::var("JWT_SECRET")?;
+
+        let refresh_token_claim = jsonwebtoken::decode::<RefreshTokenClaims>(
             refresh_token,
             &DecodingKey::from_secret(secret.as_ref()),
             &Validation::new(Algorithm::HS256),
-        )
-        .unwrap()
-        .claims
+        )?
+        .claims;
+
+        Ok(refresh_token_claim)
     }
 }
 
-pub fn generate_token<T: JwtToken + Serialize>(claims: T) -> String {
-    let secret = std::env::var("JWT_SECRET").unwrap();
-    jsonwebtoken::encode(
+pub fn generate_token<T: JwtToken + Serialize>(claims: T) -> Result<String, AppError> {
+    let secret = std::env::var("JWT_SECRET")?;
+    
+    let token = jsonwebtoken::encode(
         &Header::default(),
         &claims,
         &EncodingKey::from_secret(secret.as_ref()),
-    )
-    .unwrap()
+    )?;
+    Ok(token)
 }

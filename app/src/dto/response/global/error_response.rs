@@ -5,22 +5,17 @@ use serde::Serialize;
 #[derive(Serialize)]
 pub enum ErrorCode {
     NotFound,
+    PasswordHashError,
+    MissingEnvironmentVariable,
+    ParsingError,
+    DatabaseError
 }
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ErrorResponse {
-    code: ErrorCode,
-    message: String,
-}
-
-impl ErrorResponse {
-    pub fn new(code: ErrorCode, message: &str) -> ErrorResponse {
-        ErrorResponse {
-            code,
-            message: String::from(message),
-        }
-    }
+    pub code: ErrorCode,
+    pub message: String,
 }
 
 impl IntoResponse for ErrorResponse {

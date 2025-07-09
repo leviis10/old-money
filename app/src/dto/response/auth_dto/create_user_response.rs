@@ -1,20 +1,18 @@
-use derive_builder::Builder;
 use serde::Serialize;
 use time::OffsetDateTime;
 
-#[derive(Serialize, Builder)]
-#[builder(setter(into))]
+#[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateUserResponse {
-    id: i32,
+    pub id: i32,
 
-    username: String,
+    pub username: String,
 
-    email: String,
-
-    #[serde(with = "time::serde::rfc3339")]
-    created_at: OffsetDateTime,
+    pub email: String,
 
     #[serde(with = "time::serde::rfc3339")]
-    updated_at: OffsetDateTime,
+    pub created_at: OffsetDateTime,
+
+    #[serde(with = "time::serde::rfc3339")]
+    pub updated_at: OffsetDateTime,
 }

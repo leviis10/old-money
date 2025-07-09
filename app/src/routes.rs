@@ -1,6 +1,5 @@
 use crate::{AppState, controllers};
 use axum::Router;
-use axum::routing::get;
 use std::sync::Arc;
 
 pub mod auth_route;
@@ -15,7 +14,6 @@ pub mod wallets_route;
 
 pub fn register() -> Router<Arc<AppState>> {
     Router::new()
-        .route("/", get(|| async { "Hello, World!" }))
         .nest("/api/v1/auth", auth_route::register())
         .nest("/api/v1/categories", categories_route::register())
         .nest("/api/v1/wallets", wallets_route::register())
