@@ -1,15 +1,9 @@
 use crate::AppState;
 use crate::dto::request::categories_dto::create_category_request::CreateCategoryRequest;
 use crate::dto::request::categories_dto::update_category_request::UpdateCategoryRequest;
-use crate::dto::response::categories_dto::create_category_response::{
-    CreateCategoryResponse, CreateCategoryResponseBuilder,
-};
-use crate::dto::response::categories_dto::get_category_response::{
-    GetCategoryResponse, GetCategoryResponseBuilder,
-};
-use crate::dto::response::categories_dto::update_category_response::{
-    UpdateCategoryResponse, UpdateCategoryResponseBuilder,
-};
+use crate::dto::response::categories_dto::create_category_response::CreateCategoryResponse;
+use crate::dto::response::categories_dto::get_category_response::GetCategoryResponse;
+use crate::dto::response::categories_dto::update_category_response::UpdateCategoryResponse;
 use crate::dto::response::global::success_response::{Meta, SuccessResponse};
 use crate::entities::categories;
 use crate::entities::prelude::Categories;
@@ -21,20 +15,18 @@ use time::OffsetDateTime;
 
 pub async fn get_all() -> SuccessResponse<Vec<GetCategoryResponse>> {
     let response = vec![
-        GetCategoryResponseBuilder::default()
-            .id(1u32)
-            .name("category 1")
-            .created_at(OffsetDateTime::now_utc())
-            .updated_at(OffsetDateTime::now_utc())
-            .build()
-            .unwrap(),
-        GetCategoryResponseBuilder::default()
-            .id(2u32)
-            .name("category 2")
-            .created_at(OffsetDateTime::now_utc())
-            .updated_at(OffsetDateTime::now_utc())
-            .build()
-            .unwrap(),
+        GetCategoryResponse {
+            id: 1u32,
+            name: String::from("category 1"),
+            created_at: OffsetDateTime::now_utc(),
+            updated_at: OffsetDateTime::now_utc(),
+        },
+        GetCategoryResponse {
+            id: 2u32,
+            name: String::from("category 2"),
+            created_at: OffsetDateTime::now_utc(),
+            updated_at: OffsetDateTime::now_utc(),
+        },
     ];
     let meta = Meta::new(response.len() as u64, 1, 1);
 
@@ -42,13 +34,12 @@ pub async fn get_all() -> SuccessResponse<Vec<GetCategoryResponse>> {
 }
 
 pub async fn get_by_id(Path(id): Path<u32>) -> SuccessResponse<GetCategoryResponse> {
-    let response = GetCategoryResponseBuilder::default()
-        .id(id)
-        .name(format!("category {id}"))
-        .created_at(OffsetDateTime::now_utc())
-        .updated_at(OffsetDateTime::now_utc())
-        .build()
-        .unwrap();
+    let response = GetCategoryResponse {
+        id,
+        name: format!("category {id}"),
+        created_at: OffsetDateTime::now_utc(),
+        updated_at: OffsetDateTime::now_utc(),
+    };
     SuccessResponse::new("Successfully get category", response)
 }
 
@@ -66,13 +57,12 @@ pub async fn create(
         .unwrap();
 
     let now = OffsetDateTime::now_utc();
-    let response = CreateCategoryResponseBuilder::default()
-        .id(db_response.last_insert_id)
-        .name(payload.name)
-        .created_at(now)
-        .updated_at(now)
-        .build()
-        .unwrap();
+    let response = CreateCategoryResponse {
+        id: db_response.last_insert_id,
+        name: payload.name,
+        created_at: now,
+        updated_at: now,
+    };
 
     (
         StatusCode::CREATED,
@@ -84,13 +74,12 @@ pub async fn update_by_id(
     Path(id): Path<u32>,
     Json(payload): Json<UpdateCategoryRequest>,
 ) -> SuccessResponse<UpdateCategoryResponse> {
-    let response = UpdateCategoryResponseBuilder::default()
-        .id(id)
-        .name(payload.name)
-        .created_at(OffsetDateTime::now_utc())
-        .updated_at(OffsetDateTime::now_utc())
-        .build()
-        .unwrap();
+    let response = UpdateCategoryResponse {
+        id,
+        name: payload.name,
+        created_at: OffsetDateTime::now_utc(),
+        updated_at: OffsetDateTime::now_utc(),
+    };
     SuccessResponse::new("Successfully updated category", response)
 }
 

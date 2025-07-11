@@ -1,26 +1,16 @@
-use axum::Json;
-use axum::response::{IntoResponse, Response};
-use derive_builder::Builder;
 use serde::Serialize;
 use time::OffsetDateTime;
 
-#[derive(Serialize, Builder)]
-#[builder(setter(into))]
+#[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateCategoryResponse {
-    id: u32,
+    pub id: u32,
 
-    name: String,
-
-    #[serde(with = "time::serde::rfc3339")]
-    created_at: OffsetDateTime,
+    pub name: String,
 
     #[serde(with = "time::serde::rfc3339")]
-    updated_at: OffsetDateTime,
-}
+    pub created_at: OffsetDateTime,
 
-impl IntoResponse for UpdateCategoryResponse {
-    fn into_response(self) -> Response {
-        Json(self).into_response()
-    }
+    #[serde(with = "time::serde::rfc3339")]
+    pub updated_at: OffsetDateTime,
 }
