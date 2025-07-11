@@ -8,7 +8,8 @@ pub enum ErrorCode {
     PasswordHashError,
     MissingEnvironmentVariable,
     ParsingError,
-    DatabaseError
+    DatabaseError,
+    ValidationError
 }
 
 #[derive(Serialize)]

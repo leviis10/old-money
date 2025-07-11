@@ -8,15 +8,15 @@ use crate::dto::response::auth_dto::refresh_token_response::RefreshTokenResponse
 use crate::dto::response::global::success_response::SuccessResponse;
 use crate::errors::AppError;
 use crate::services::auth_service;
-use axum::Json;
 use axum::extract::State;
 use axum::http::StatusCode;
 use std::sync::Arc;
 use time::OffsetDateTime;
+use crate::extractors::ValidatedJson;
 
 pub async fn register(
     State(state): State<Arc<AppState>>,
-    Json(payload): Json<RegisterUserRequest>,
+    ValidatedJson(payload): ValidatedJson<RegisterUserRequest>,
 ) -> Result<(StatusCode, SuccessResponse<CreateUserResponse>), AppError> {
     let user_model = auth_service::register(&state.db, &payload).await?;
 
@@ -37,7 +37,7 @@ pub async fn register(
 
 pub async fn login(
     State(state): State<Arc<AppState>>,
-    Json(payload): Json<LoginUserRequest>,
+    ValidatedJson(payload): ValidatedJson<LoginUserRequest>,
 ) -> Result<(StatusCode, SuccessResponse<LoginUserResponse>), AppError> {
     let (access_token, refresh_token) = auth_service::login(&state.db, payload).await?;
 
@@ -54,7 +54,7 @@ pub async fn login(
 
 pub async fn refresh(
     State(state): State<Arc<AppState>>,
-    Json(payload): Json<RefreshTokenRequest>,
+    ValidatedJson(payload): ValidatedJson<RefreshTokenRequest>,
 ) -> Result<(StatusCode, SuccessResponse<RefreshTokenResponse>), AppError> {
     let (access_token, refresh_token) = auth_service::refresh(&state.db, payload).await?;
     let response = SuccessResponse::new(

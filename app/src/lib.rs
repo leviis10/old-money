@@ -20,6 +20,7 @@ mod routes;
 mod services;
 mod utils;
 mod errors;
+mod extractors;
 
 struct AppState {
     db: DatabaseConnection,

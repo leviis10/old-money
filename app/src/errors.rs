@@ -2,11 +2,13 @@ use crate::dto::response::global::error_response::{ErrorCode, ErrorResponse};
 use argon2::password_hash::Error as ArgonError;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
-use std::env::VarError;
-use std::num::ParseIntError;
-use time::error::ComponentRange as TimeError;
 use jsonwebtoken::errors::Error as JwtError;
 use sea_orm::DbErr;
+use std::env::VarError;
+use std::num::ParseIntError;
+use axum::extract::rejection::JsonRejection;
+use time::error::ComponentRange as TimeError;
+use validator::ValidationErrors;
 
 #[derive(Debug)]
 pub enum AppError {
@@ -16,7 +18,9 @@ pub enum AppError {
     VarError(VarError),
     ParseIntError(ParseIntError),
     JwtError(JwtError),
-    DbErr(DbErr)
+    DbErr(DbErr),
+    ValidationErrors(ValidationErrors),
+    ParseJsonError(JsonRejection)
 }
 
 impl IntoResponse for AppError {
@@ -54,23 +58,37 @@ impl IntoResponse for AppError {
                 StatusCode::INTERNAL_SERVER_ERROR,
                 ErrorResponse {
                     code: ErrorCode::ParsingError,
-                    message: err.to_string()
-                }
+                    message: err.to_string(),
+                },
             ),
             AppError::JwtError(ref err) => (
                 StatusCode::BAD_REQUEST,
                 ErrorResponse {
                     code: ErrorCode::ParsingError,
-                    message: err.to_string()
-                }
+                    message: err.to_string(),
+                },
             ),
             AppError::DbErr(ref err) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 ErrorResponse {
                     code: ErrorCode::DatabaseError,
-                    message: err.to_string()
-                }
-            ) 
+                    message: err.to_string(),
+                },
+            ),
+            AppError::ValidationErrors(ref err) => (
+                StatusCode::BAD_REQUEST,
+                ErrorResponse {
+                    code: ErrorCode::ValidationError,
+                    message: err.to_string(),
+                },
+            ),
+            AppError::ParseJsonError(ref err) => (
+                StatusCode::BAD_REQUEST,
+                ErrorResponse {
+                    code: ErrorCode::ValidationError,
+                    message: err.to_string(),
+                },
+            )
         };
 
         tracing::error!("Error: {:?}", self);
@@ -111,5 +129,17 @@ impl From<JwtError> for AppError {
 impl From<DbErr> for AppError {
     fn from(err: DbErr) -> Self {
         AppError::DbErr(err)
+    }
+}
+
+impl From<ValidationErrors> for AppError {
+    fn from(err: ValidationErrors) -> Self {
+        AppError::ValidationErrors(err)
+    }
+}
+
+impl From<JsonRejection> for AppError {
+    fn from(err: JsonRejection) -> Self {
+        AppError::ParseJsonError(err)
     }
 }
