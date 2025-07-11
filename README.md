@@ -11,7 +11,7 @@ This project mainly for my educational purposes but this project can be extended
 - [x] Standardize Success Response
 - [x] Authentication (JWT, RBAC, Refresh Token)
 - [x] Optimize refresh token implementation (using SHA-256 for hash, use id instead of username in token subject)
-- [ ] Request Body Validation
+- [x] Request Body Validation
 - [x] Error Handling
 - [x] Add environment variables
 - [ ] Add swagger documentation
