@@ -137,8 +137,6 @@ dependencies = [
  "axum",
  "hex",
  "jsonwebtoken",
- "once_cell",
- "regex",
  "sea-orm",
  "serde",
  "sha2",
