@@ -16,8 +16,8 @@ impl Roles {
         }
     }
 
-    pub fn from_model(role: &roles::Model) -> Result<Roles, AppError> {
-        match role.name.as_str() {
+    fn from_string(role_name: &str) -> Result<Roles, AppError> {
+        match role_name {
             "ADMIN" => Ok(Roles::Admin),
             "USER" => Ok(Roles::User),
             _ => Err(AppError::ParseRoleError),
@@ -25,6 +25,6 @@ impl Roles {
     }
 
     pub fn from_models(roles: Vec<roles::Model>) -> Result<Vec<Roles>, AppError> {
-        roles.iter().map(|role| Roles::from_model(role)).collect()
+        roles.iter().map(|role| Roles::from_string(&role.name)).collect()
     }
 }

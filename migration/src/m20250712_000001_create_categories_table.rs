@@ -1,7 +1,6 @@
 use sea_orm_migration::prelude::*;
-use sea_orm_migration::schema::{
-    pk_auto, string, timestamp_with_time_zone, timestamp_with_time_zone_null,
-};
+use sea_orm_migration::schema::{integer, pk_auto, string, timestamp_with_time_zone, timestamp_with_time_zone_null};
+use crate::m20250701_134445_create_m2m_user_roles_tables::Users;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -16,6 +15,13 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(pk_auto(Categories::Id))
                     .col(string(Categories::Name))
+                    .col(integer(Categories::UserId))
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk-categories_user-id")
+                            .from(Categories::Table, Categories::UserId)
+                            .to(Users::Table, Users::Id)
+                    )
                     .col(
                         timestamp_with_time_zone(Categories::CreatedAt)
                             .default(Expr::current_timestamp()),
@@ -46,6 +52,7 @@ pub enum Categories {
     Table,
     Id,
     Name,
+    UserId,
     CreatedAt,
     UpdatedAt,
     DeletedAt,

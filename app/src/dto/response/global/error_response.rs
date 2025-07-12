@@ -11,7 +11,6 @@ pub enum ErrorCode {
     DatabaseError,
     ValidationError,
     AuthenticationError,
-    StateError,
     ForbiddenError,
 }
 

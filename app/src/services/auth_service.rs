@@ -36,7 +36,7 @@ pub async fn register(
             username: String::from(&request.username),
             email: String::from(&request.email),
             hashed_password,
-            roles: vec![Roles::Admin],
+            roles: vec![Roles::User],
         },
     )
     .await?;

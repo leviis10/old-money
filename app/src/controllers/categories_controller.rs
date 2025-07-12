@@ -16,7 +16,7 @@ use sea_orm::{ActiveValue, EntityTrait};
 use std::sync::Arc;
 use time::OffsetDateTime;
 
-pub async fn get_all() -> SuccessResponse<Vec<GetCategoryResponse>> {
+pub async fn get_all() -> Result<SuccessResponse<Vec<GetCategoryResponse>>, AppError> {
     let response = vec![
         GetCategoryResponse {
             id: 1u32,
@@ -33,28 +33,29 @@ pub async fn get_all() -> SuccessResponse<Vec<GetCategoryResponse>> {
     ];
     let meta = Meta::new(response.len() as u64, 1, 1);
 
-    SuccessResponse::new("Successfully get all categories", response).with_meta(meta)
+    Ok(SuccessResponse::new("Successfully get all categories", response).with_meta(meta))
 }
 
-pub async fn get_by_id(Path(id): Path<u32>) -> SuccessResponse<GetCategoryResponse> {
+pub async fn get_by_id(Path(id): Path<u32>) -> Result<SuccessResponse<GetCategoryResponse>, AppError> {
     let response = GetCategoryResponse {
         id,
         name: format!("category {id}"),
         created_at: OffsetDateTime::now_utc(),
         updated_at: OffsetDateTime::now_utc(),
     };
-    SuccessResponse::new("Successfully get category", response)
+    Ok(SuccessResponse::new("Successfully get category", response))
 }
 
 pub async fn create(
     State(state): State<Arc<AppState>>,
-    User(_, roles): User,
+    User(found_user, roles): User,
     Json(payload): Json<CreateCategoryRequest>,
 ) -> Result<(StatusCode, SuccessResponse<CreateCategoryResponse>), AppError> {
     User::has_any_role(roles, vec![Roles::Admin, Roles::User])?;
 
     let new_category = categories::ActiveModel {
         name: ActiveValue::Set(String::from(&payload.name)),
+        user_id: ActiveValue::Set(found_user.id),
         ..Default::default()
     };
     let db_response = Categories::insert(new_category).exec(&state.db).await?;

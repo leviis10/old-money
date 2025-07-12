@@ -84,6 +84,10 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
+        // seed roles table
+        let roles = vec![String::from("ADMIN"), String::from("USER")];
+        seed_roles_table(&manager, roles).await?;
+
         Ok(())
     }
 
@@ -105,6 +109,19 @@ impl MigrationTrait for Migration {
 
         Ok(())
     }
+}
+
+async fn seed_roles_table(manager: &SchemaManager<'_>, roles: Vec<String>) -> Result<(), DbErr> {
+    for role in roles.iter() {
+        let insert = Query::insert()
+            .into_table(Roles::Table)
+            .columns([Roles::Name])
+            .values_panic([role.into()])
+            .to_owned();
+        manager.exec_stmt(insert).await?;
+    }
+
+    Ok(())
 }
 
 #[derive(DeriveIden)]

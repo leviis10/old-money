@@ -3,6 +3,7 @@ use validator::Validate;
 
 #[derive(Deserialize, Validate)]
 pub struct RegisterUserRequest {
+    #[validate(length(min = 3, message = "Username must be at least 3 characters"))]
     pub username: String,
 
     #[validate(email(message = "Invalid email"))]
