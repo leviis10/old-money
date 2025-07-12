@@ -3,7 +3,7 @@ use axum::http::{StatusCode, Uri};
 
 pub async fn not_found(uri: Uri) -> (StatusCode, ErrorResponse) {
     let response = ErrorResponse {
-        code: ErrorCode::NotFound,
+        code: ErrorCode::NotFoundError,
         message: format!("{} not found", uri.path()),
     };
     (StatusCode::NOT_FOUND, response)

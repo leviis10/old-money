@@ -7,12 +7,12 @@ use crate::dto::response::auth_dto::login_user_response::LoginUserResponse;
 use crate::dto::response::auth_dto::refresh_token_response::RefreshTokenResponse;
 use crate::dto::response::global::success_response::SuccessResponse;
 use crate::errors::AppError;
+use crate::extractors::json::ValidatedJson;
 use crate::services::auth_service;
 use axum::extract::State;
 use axum::http::StatusCode;
 use std::sync::Arc;
 use time::OffsetDateTime;
-use crate::extractors::ValidatedJson;
 
 pub async fn register(
     State(state): State<Arc<AppState>>,

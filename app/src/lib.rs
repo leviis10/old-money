@@ -15,12 +15,12 @@ mod controllers;
 mod dto;
 mod entities;
 mod enums;
+mod errors;
+mod extractors;
 mod repositories;
 mod routes;
 mod services;
 mod utils;
-mod errors;
-mod extractors;
 
 struct AppState {
     db: DatabaseConnection,

@@ -1,12 +1,13 @@
 use crate::dto::response::global::error_response::{ErrorCode, ErrorResponse};
 use argon2::password_hash::Error as ArgonError;
+use axum::extract::rejection::JsonRejection;
 use axum::http::StatusCode;
+use axum::http::header::ToStrError;
 use axum::response::{IntoResponse, Response};
 use jsonwebtoken::errors::Error as JwtError;
 use sea_orm::DbErr;
 use std::env::VarError;
 use std::num::ParseIntError;
-use axum::extract::rejection::JsonRejection;
 use time::error::ComponentRange as TimeError;
 use validator::ValidationErrors;
 
@@ -14,13 +15,17 @@ use validator::ValidationErrors;
 pub enum AppError {
     ArgonError(ArgonError),
     TimeError(TimeError),
-    NotFound(String),
-    VarError(VarError),
+    NotFoundError(String),
+    EnvironmentVariableError(VarError),
     ParseIntError(ParseIntError),
+    ParseStringError(ToStrError),
+    ParseRoleError,
     JwtError(JwtError),
-    DbErr(DbErr),
-    ValidationErrors(ValidationErrors),
-    ParseJsonError(JsonRejection)
+    DatabaseError(DbErr),
+    ValidationError(ValidationErrors),
+    ParseJsonError(JsonRejection),
+    UnauthenticatedError(String),
+    ForbiddenError(String),
 }
 
 impl IntoResponse for AppError {
@@ -40,17 +45,17 @@ impl IntoResponse for AppError {
                     message: err.to_string(),
                 },
             ),
-            AppError::VarError(ref err) => (
+            AppError::EnvironmentVariableError(ref err) => (
                 StatusCode::SERVICE_UNAVAILABLE,
                 ErrorResponse {
-                    code: ErrorCode::MissingEnvironmentVariable,
+                    code: ErrorCode::EnvironmentVariableError,
                     message: err.to_string(),
                 },
             ),
-            AppError::NotFound(ref err) => (
+            AppError::NotFoundError(ref err) => (
                 StatusCode::NOT_FOUND,
                 ErrorResponse {
-                    code: ErrorCode::NotFound,
+                    code: ErrorCode::NotFoundError,
                     message: String::from(err),
                 },
             ),
@@ -68,14 +73,14 @@ impl IntoResponse for AppError {
                     message: err.to_string(),
                 },
             ),
-            AppError::DbErr(ref err) => (
+            AppError::DatabaseError(ref err) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 ErrorResponse {
                     code: ErrorCode::DatabaseError,
                     message: err.to_string(),
                 },
             ),
-            AppError::ValidationErrors(ref err) => (
+            AppError::ValidationError(ref err) => (
                 StatusCode::BAD_REQUEST,
                 ErrorResponse {
                     code: ErrorCode::ValidationError,
@@ -88,7 +93,35 @@ impl IntoResponse for AppError {
                     code: ErrorCode::ValidationError,
                     message: err.to_string(),
                 },
-            )
+            ),
+            AppError::UnauthenticatedError(ref err) => (
+                StatusCode::UNAUTHORIZED,
+                ErrorResponse {
+                    code: ErrorCode::AuthenticationError,
+                    message: String::from(err),
+                },
+            ),
+            AppError::ParseStringError(ref err) => (
+                StatusCode::BAD_REQUEST,
+                ErrorResponse {
+                    code: ErrorCode::ParsingError,
+                    message: err.to_string(),
+                },
+            ),
+            AppError::ForbiddenError(ref err) => (
+                StatusCode::FORBIDDEN,
+                ErrorResponse {
+                    code: ErrorCode::ForbiddenError,
+                    message: String::from(err),
+                },
+            ),
+            AppError::ParseRoleError => (
+                StatusCode::BAD_REQUEST,
+                ErrorResponse {
+                    code: ErrorCode::ParsingError,
+                    message: String::from("Error parsing role"),
+                },
+            ),
         };
 
         tracing::error!("Error: {:?}", self);
@@ -110,7 +143,7 @@ impl From<TimeError> for AppError {
 
 impl From<VarError> for AppError {
     fn from(err: VarError) -> Self {
-        AppError::VarError(err)
+        AppError::EnvironmentVariableError(err)
     }
 }
 
@@ -128,18 +161,24 @@ impl From<JwtError> for AppError {
 
 impl From<DbErr> for AppError {
     fn from(err: DbErr) -> Self {
-        AppError::DbErr(err)
+        AppError::DatabaseError(err)
     }
 }
 
 impl From<ValidationErrors> for AppError {
     fn from(err: ValidationErrors) -> Self {
-        AppError::ValidationErrors(err)
+        AppError::ValidationError(err)
     }
 }
 
 impl From<JsonRejection> for AppError {
     fn from(err: JsonRejection) -> Self {
         AppError::ParseJsonError(err)
+    }
+}
+
+impl From<ToStrError> for AppError {
+    fn from(err: ToStrError) -> Self {
+        AppError::ParseStringError(err)
     }
 }

@@ -7,6 +7,9 @@ use crate::dto::response::categories_dto::update_category_response::UpdateCatego
 use crate::dto::response::global::success_response::{Meta, SuccessResponse};
 use crate::entities::categories;
 use crate::entities::prelude::Categories;
+use crate::enums::roles::Roles;
+use crate::errors::AppError;
+use crate::extractors::user::User;
 use axum::extract::{Json, Path, State};
 use axum::http::StatusCode;
 use sea_orm::{ActiveValue, EntityTrait};
@@ -45,16 +48,16 @@ pub async fn get_by_id(Path(id): Path<u32>) -> SuccessResponse<GetCategoryRespon
 
 pub async fn create(
     State(state): State<Arc<AppState>>,
+    User(_, roles): User,
     Json(payload): Json<CreateCategoryRequest>,
-) -> (StatusCode, SuccessResponse<CreateCategoryResponse>) {
+) -> Result<(StatusCode, SuccessResponse<CreateCategoryResponse>), AppError> {
+    User::has_any_role(roles, vec![Roles::Admin, Roles::User])?;
+
     let new_category = categories::ActiveModel {
         name: ActiveValue::Set(String::from(&payload.name)),
         ..Default::default()
     };
-    let db_response = Categories::insert(new_category)
-        .exec(&state.db)
-        .await
-        .unwrap();
+    let db_response = Categories::insert(new_category).exec(&state.db).await?;
 
     let now = OffsetDateTime::now_utc();
     let response = CreateCategoryResponse {
@@ -64,10 +67,10 @@ pub async fn create(
         updated_at: now,
     };
 
-    (
+    Ok((
         StatusCode::CREATED,
         SuccessResponse::new("Successfully created new category", response),
-    )
+    ))
 }
 
 pub async fn update_by_id(

@@ -10,7 +10,7 @@ pub trait JwtToken {}
 
 #[derive(Serialize, Deserialize)]
 pub struct AccessTokenClaims {
-    sub: i32,
+    pub sub: i32,
     roles: Vec<String>,
     iat: usize,
     exp: usize,
@@ -40,6 +40,17 @@ impl AccessTokenClaims {
             exp,
         };
         Ok(access_token)
+    }
+
+    pub fn parse(access_token: &str) -> Result<AccessTokenClaims, AppError> {
+        let secret = std::env::var("JWT_SECRET")?;
+        let access_token_claim: AccessTokenClaims = jsonwebtoken::decode(
+            access_token,
+            &DecodingKey::from_secret(secret.as_bytes()),
+            &Validation::new(Algorithm::HS256),
+        )?
+        .claims;
+        Ok(access_token_claim)
     }
 }
 
@@ -80,7 +91,7 @@ impl RefreshTokenClaims {
     pub fn parse(refresh_token: &str) -> Result<RefreshTokenClaims, AppError> {
         let secret = std::env::var("JWT_SECRET")?;
 
-        let refresh_token_claim = jsonwebtoken::decode::<RefreshTokenClaims>(
+        let refresh_token_claim: RefreshTokenClaims = jsonwebtoken::decode(
             refresh_token,
             &DecodingKey::from_secret(secret.as_ref()),
             &Validation::new(Algorithm::HS256),
@@ -93,7 +104,7 @@ impl RefreshTokenClaims {
 
 pub fn generate_token<T: JwtToken + Serialize>(claims: T) -> Result<String, AppError> {
     let secret = std::env::var("JWT_SECRET")?;
-    
+
     let token = jsonwebtoken::encode(
         &Header::default(),
         &claims,
