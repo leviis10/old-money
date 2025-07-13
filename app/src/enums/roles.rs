@@ -25,6 +25,9 @@ impl Roles {
     }
 
     pub fn from_models(roles: Vec<roles::Model>) -> Result<Vec<Roles>, AppError> {
-        roles.iter().map(|role| Roles::from_string(&role.name)).collect()
+        roles
+            .iter()
+            .map(|role| Roles::from_string(&role.name))
+            .collect()
     }
 }

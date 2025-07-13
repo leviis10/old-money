@@ -14,6 +14,18 @@ use axum::http::StatusCode;
 use std::sync::Arc;
 use time::OffsetDateTime;
 
+#[utoipa::path(
+    tag = "auth",
+    post,
+    path = "/api/v1/auth/register",
+    request_body(
+        content = RegisterUserRequest,
+        content_type = "application/json"
+    ),
+    responses(
+        (status = 201, body = SuccessResponse<CreateUserResponse>)
+    )
+)]
 pub async fn register(
     State(state): State<Arc<AppState>>,
     ValidatedJson(payload): ValidatedJson<RegisterUserRequest>,
@@ -35,6 +47,18 @@ pub async fn register(
     Ok((StatusCode::CREATED, response))
 }
 
+#[utoipa::path(
+    tag = "auth",
+    post,
+    path = "/api/v1/auth/login",
+    request_body(
+        content = LoginUserRequest,
+        content_type = "application/json"
+    ),
+    responses(
+        (status = 200, body = SuccessResponse<LoginUserResponse>)
+    )
+)]
 pub async fn login(
     State(state): State<Arc<AppState>>,
     ValidatedJson(payload): ValidatedJson<LoginUserRequest>,

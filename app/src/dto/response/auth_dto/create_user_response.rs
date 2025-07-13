@@ -1,7 +1,8 @@
 use serde::Serialize;
 use time::OffsetDateTime;
+use utoipa::ToSchema;
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateUserResponse {
     pub id: i32,

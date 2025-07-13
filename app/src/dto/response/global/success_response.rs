@@ -1,8 +1,9 @@
 use axum::Json;
 use axum::response::{IntoResponse, Response};
 use serde::Serialize;
+use utoipa::ToSchema;
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Meta {
     total_items: u64,
@@ -20,7 +21,7 @@ impl Meta {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct SuccessResponse<T: Serialize> {
     message: String,

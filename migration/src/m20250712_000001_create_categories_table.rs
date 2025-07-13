@@ -1,6 +1,8 @@
-use sea_orm_migration::prelude::*;
-use sea_orm_migration::schema::{integer, pk_auto, string, timestamp_with_time_zone, timestamp_with_time_zone_null};
 use crate::m20250701_134445_create_m2m_user_roles_tables::Users;
+use sea_orm_migration::prelude::*;
+use sea_orm_migration::schema::{
+    integer, pk_auto, string, timestamp_with_time_zone, timestamp_with_time_zone_null,
+};
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -20,7 +22,7 @@ impl MigrationTrait for Migration {
                         ForeignKey::create()
                             .name("fk-categories_user-id")
                             .from(Categories::Table, Categories::UserId)
-                            .to(Users::Table, Users::Id)
+                            .to(Users::Table, Users::Id),
                     )
                     .col(
                         timestamp_with_time_zone(Categories::CreatedAt)

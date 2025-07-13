@@ -1,7 +1,8 @@
 use serde::Deserialize;
+use utoipa::ToSchema;
 use validator::Validate;
 
-#[derive(Deserialize, Validate)]
+#[derive(Deserialize, Validate, ToSchema)]
 pub struct RegisterUserRequest {
     #[validate(length(min = 3, message = "Username must be at least 3 characters"))]
     pub username: String,

@@ -36,7 +36,9 @@ pub async fn get_all() -> Result<SuccessResponse<Vec<GetCategoryResponse>>, AppE
     Ok(SuccessResponse::new("Successfully get all categories", response).with_meta(meta))
 }
 
-pub async fn get_by_id(Path(id): Path<u32>) -> Result<SuccessResponse<GetCategoryResponse>, AppError> {
+pub async fn get_by_id(
+    Path(id): Path<u32>,
+) -> Result<SuccessResponse<GetCategoryResponse>, AppError> {
     let response = GetCategoryResponse {
         id,
         name: format!("category {id}"),

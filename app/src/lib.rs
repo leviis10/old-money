@@ -1,3 +1,4 @@
+use crate::docs::ApiDoc;
 use axum::Router;
 use sea_orm::{Database, DatabaseConnection};
 use std::error::Error;
@@ -10,8 +11,11 @@ use tower_http::request_id::MakeRequestUuid;
 use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
 use tracing_subscriber::EnvFilter;
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
 mod controllers;
+mod docs;
 mod dto;
 mod entities;
 mod enums;
@@ -46,7 +50,7 @@ async fn start() -> Result<(), Box<dyn Error>> {
     });
     tracing::info!("Connected to the database");
 
-    let app = Router::new()
+    let mut app = Router::new()
         .merge(routes::register())
         .with_state(shared_state)
         .layer(
@@ -62,6 +66,11 @@ async fn start() -> Result<(), Box<dyn Error>> {
                 .set_x_request_id(MakeRequestUuid)
                 .propagate_x_request_id(),
         );
+
+    if cfg!(debug_assertions) {
+        app = app
+            .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
+    }
 
     let listener = TcpListener::bind(&address).await?;
     tracing::info!("Server started");
