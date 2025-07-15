@@ -73,7 +73,7 @@ async fn start() -> Result<(), Box<dyn Error>> {
     }
 
     let listener = TcpListener::bind(&address).await?;
-    tracing::info!("Server started");
+    tracing::info!("Server started on port {port}");
     axum::serve(listener, app).await?;
 
     Ok(())

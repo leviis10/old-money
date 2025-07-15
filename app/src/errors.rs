@@ -24,6 +24,7 @@ pub enum AppError {
     DatabaseError(DbErr),
     ValidationError(ValidationErrors),
     ParseJsonError(JsonRejection),
+    ParseQueryError(String),
     UnauthenticatedError(String),
     ForbiddenError(String),
 }
@@ -120,6 +121,13 @@ impl IntoResponse for AppError {
                 ErrorResponse {
                     code: ErrorCode::ParsingError,
                     message: String::from("Error parsing role"),
+                },
+            ),
+            AppError::ParseQueryError(ref err) => (
+                StatusCode::BAD_REQUEST,
+                ErrorResponse {
+                    code: ErrorCode::ParsingError,
+                    message: String::from(err),
                 },
             ),
         };

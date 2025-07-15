@@ -76,6 +76,18 @@ pub async fn login(
     Ok((StatusCode::OK, response))
 }
 
+#[utoipa::path(
+    tag = "auth",
+    post,
+    path = "/api/v1/auth/refresh",
+    request_body(
+        content = RefreshTokenRequest,
+        content_type = "application/json"
+    ),
+    responses(
+        (status = 200, body = SuccessResponse<RefreshTokenResponse>)
+    )
+)]
 pub async fn refresh(
     State(state): State<Arc<AppState>>,
     ValidatedJson(payload): ValidatedJson<RefreshTokenRequest>,

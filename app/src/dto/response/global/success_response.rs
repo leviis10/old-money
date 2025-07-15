@@ -6,19 +6,10 @@ use utoipa::ToSchema;
 #[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Meta {
-    total_items: u64,
-    page: u64,
-    page_size: u64,
-}
-
-impl Meta {
-    pub fn new(total_items: u64, page: u64, page_size: u64) -> Meta {
-        Meta {
-            total_items,
-            page,
-            page_size,
-        }
-    }
+    pub total_items: u64,
+    pub page: u64,
+    pub page_size: u64,
+    pub last_page: u64,
 }
 
 #[derive(Serialize, ToSchema)]

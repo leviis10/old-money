@@ -2,6 +2,6 @@
 
 pub use super::categories::Entity as Categories;
 pub use super::refresh_tokens::Entity as RefreshTokens;
-pub use super::roles::Entity as Roles;
-pub use super::user_roles::Entity as UserRoles;
+// pub use super::roles::Entity as Roles;
+// pub use super::user_roles::Entity as UserRoles;
 pub use super::users::Entity as Users;
