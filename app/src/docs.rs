@@ -8,7 +8,6 @@ use utoipa::{Modify, OpenApi};
         crate::controllers::auth_controller::login,
         crate::controllers::auth_controller::refresh,
         crate::controllers::categories_controller::create,
-        crate::controllers::categories_controller::get_by_name,
         crate::controllers::categories_controller::get_all,
     ),
     modifiers(&SecurityAddon),

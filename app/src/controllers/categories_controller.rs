@@ -23,6 +23,7 @@ use time::OffsetDateTime;
     params(
         ("page" = Option<String>, Query),
         ("page_size" = Option<String>, Query),
+        ("name" = Option<String>, Query),
     ),
     responses(
         (status = 200, body = SuccessResponse<Vec<GetCategoryResponse>>)
@@ -37,16 +38,13 @@ pub async fn get_all(
     Query(params): Query<GetAllCategoriesParams>,
 ) -> Result<(StatusCode, SuccessResponse<Vec<GetCategoryResponse>>), AppError> {
     User::has_any_role(roles, vec![Roles::User])?;
-    if let Some(page) = params.page {
-        if page == 0 {
-            return Err(AppError::ParseQueryError(String::from("Page cannot be 0")));
-        }
-    }
+    let validated_query_params = params.validate()?;
 
-    let (found_categories_paginated, total_found_categories) =
-        categories_service::get_all(&state.db, found_user.id, &params).await?;
+    let (found_categories, total_found_categories) =
+        categories_service::get_all(&state.db, found_user.id, validated_query_params.to_owned())
+            .await?;
 
-    let found_categories = found_categories_paginated
+    let found_categories = found_categories
         .iter()
         .map(|category| GetCategoryResponse {
             id: category.id,
@@ -56,58 +54,25 @@ pub async fn get_all(
         })
         .collect();
 
-    let mut meta = None;
-    if params.page.is_some() && params.page_size.is_some() {
-        let page = params.page.unwrap();
-        let page_size = params.page_size.unwrap();
-        meta = Some(Meta {
-            total_items: total_found_categories,
-            page,
-            page_size,
-            last_page: ((total_found_categories as f64) / (page_size as f64)).ceil() as u64,
-        });
-    }
-
-    let mut response = SuccessResponse::new("Successfully get all categories", found_categories);
-    if let Some(meta) = meta {
-        response = response.with_meta(meta);
+    let (Some(paginated), Some(page_information)) =
+        (validated_query_params.paginated, total_found_categories)
+    else {
+        return Ok((
+            StatusCode::OK,
+            SuccessResponse::new("Successfully get all categories", found_categories),
+        ));
     };
 
-    Ok((StatusCode::OK, response))
-}
+    let meta = Meta {
+        total_items: page_information.number_of_items,
+        page: paginated.page,
+        page_size: paginated.page_size,
+        last_page: page_information.number_of_pages,
+    };
 
-#[utoipa::path(
-    tag = "categories",
-    get,
-    path = "/api/v1/categories/{name}",
-    params(
-        ("name" = String, Path),
-    ),
-    responses(
-        (status = 200, body = SuccessResponse<GetCategoryResponse>)
-    ),
-    security(
-        ("bearer_auth" = [])
-    )
-)]
-pub async fn get_by_name(
-    State(state): State<Arc<AppState>>,
-    User(found_user, roles): User,
-    Path(category_name): Path<String>,
-) -> Result<SuccessResponse<GetCategoryResponse>, AppError> {
-    User::has_any_role(roles, vec![Roles::User])?;
-
-    let found_category =
-        categories_service::get_by_user_id_and_name(&state.db, found_user.id, &category_name)
-            .await?;
-    Ok(SuccessResponse::new(
-        "Successfully get category",
-        GetCategoryResponse {
-            id: found_category.id,
-            name: found_category.name,
-            created_at: found_category.created_at,
-            updated_at: found_category.updated_at,
-        },
+    Ok((
+        StatusCode::OK,
+        SuccessResponse::new("Successfully get all categories", found_categories).with_meta(meta),
     ))
 }
 
