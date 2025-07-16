@@ -43,9 +43,6 @@ pub async fn find_by_pk(
 fn get_first_user(
     found_users: Vec<(users::Model, Vec<roles::Model>)>,
 ) -> Option<(users::Model, Vec<roles::Model>)> {
-    let first_user = found_users.get(0);
-    match first_user {
-        Some((found_user, roles)) => Some((found_user.clone(), roles.clone())),
-        None => None,
-    }
+    let (found_user, roles) = found_users.first()?;
+    Some((found_user.to_owned(), roles.to_owned()))
 }

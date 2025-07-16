@@ -20,7 +20,7 @@ impl Roles {
         match role_name {
             "ADMIN" => Ok(Roles::Admin),
             "USER" => Ok(Roles::User),
-            _ => Err(AppError::ParseRoleError),
+            _ => Err(AppError::ParseRole),
         }
     }
 

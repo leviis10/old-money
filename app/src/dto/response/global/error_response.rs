@@ -4,14 +4,14 @@ use serde::Serialize;
 
 #[derive(Serialize)]
 pub enum ErrorCode {
-    NotFoundError,
-    PasswordHashError,
-    EnvironmentVariableError,
-    ParsingError,
-    DatabaseError,
-    ValidationError,
-    AuthenticationError,
-    ForbiddenError,
+    NotFound,
+    Hash,
+    EnvironmentVariable,
+    Parse,
+    Database,
+    Validation,
+    Authentication,
+    Authorization,
 }
 
 #[derive(Serialize)]

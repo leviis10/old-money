@@ -13,120 +13,120 @@ use validator::ValidationErrors;
 
 #[derive(Debug)]
 pub enum AppError {
-    ArgonError(ArgonError),
-    TimeError(TimeError),
-    NotFoundError(String),
-    EnvironmentVariableError(VarError),
-    ParseIntError(ParseIntError),
-    ParseStringError(ToStrError),
-    ParseRoleError,
-    JwtError(JwtError),
-    DatabaseError(DbErr),
-    ValidationError(ValidationErrors),
-    ParseJsonError(JsonRejection),
-    ParseQueryError(String),
-    UnauthenticatedError(String),
-    ForbiddenError(String),
+    Argon(ArgonError),
+    Time(TimeError),
+    NotFound(String),
+    EnvironmentVariable(VarError),
+    ParseInt(ParseIntError),
+    ParseString(ToStrError),
+    ParseRole,
+    Jwt(JwtError),
+    Database(DbErr),
+    Validation(ValidationErrors),
+    ParseJson(JsonRejection),
+    ParseQuery(String),
+    Unauthenticated(String),
+    Forbidden(String),
 }
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, response) = match self {
-            AppError::ArgonError(err) => (
+            AppError::Argon(err) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 ErrorResponse {
-                    code: ErrorCode::PasswordHashError,
+                    code: ErrorCode::Hash,
                     message: err.to_string(),
                 },
             ),
-            AppError::TimeError(err) => (
+            AppError::Time(err) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 ErrorResponse {
-                    code: ErrorCode::PasswordHashError,
+                    code: ErrorCode::Hash,
                     message: err.to_string(),
                 },
             ),
-            AppError::EnvironmentVariableError(ref err) => (
+            AppError::EnvironmentVariable(ref err) => (
                 StatusCode::SERVICE_UNAVAILABLE,
                 ErrorResponse {
-                    code: ErrorCode::EnvironmentVariableError,
+                    code: ErrorCode::EnvironmentVariable,
                     message: err.to_string(),
                 },
             ),
-            AppError::NotFoundError(ref err) => (
+            AppError::NotFound(ref err) => (
                 StatusCode::NOT_FOUND,
                 ErrorResponse {
-                    code: ErrorCode::NotFoundError,
+                    code: ErrorCode::NotFound,
                     message: String::from(err),
                 },
             ),
-            AppError::ParseIntError(ref err) => (
+            AppError::ParseInt(ref err) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 ErrorResponse {
-                    code: ErrorCode::ParsingError,
+                    code: ErrorCode::Parse,
                     message: err.to_string(),
                 },
             ),
-            AppError::JwtError(ref err) => (
+            AppError::Jwt(ref err) => (
                 StatusCode::BAD_REQUEST,
                 ErrorResponse {
-                    code: ErrorCode::ParsingError,
+                    code: ErrorCode::Parse,
                     message: err.to_string(),
                 },
             ),
-            AppError::DatabaseError(ref err) => (
+            AppError::Database(ref err) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 ErrorResponse {
-                    code: ErrorCode::DatabaseError,
+                    code: ErrorCode::Database,
                     message: err.to_string(),
                 },
             ),
-            AppError::ValidationError(ref err) => (
+            AppError::Validation(ref err) => (
                 StatusCode::BAD_REQUEST,
                 ErrorResponse {
-                    code: ErrorCode::ValidationError,
+                    code: ErrorCode::Validation,
                     message: err.to_string(),
                 },
             ),
-            AppError::ParseJsonError(ref err) => (
+            AppError::ParseJson(ref err) => (
                 StatusCode::BAD_REQUEST,
                 ErrorResponse {
-                    code: ErrorCode::ValidationError,
+                    code: ErrorCode::Validation,
                     message: err.to_string(),
                 },
             ),
-            AppError::UnauthenticatedError(ref err) => (
+            AppError::Unauthenticated(ref err) => (
                 StatusCode::UNAUTHORIZED,
                 ErrorResponse {
-                    code: ErrorCode::AuthenticationError,
+                    code: ErrorCode::Authentication,
                     message: String::from(err),
                 },
             ),
-            AppError::ParseStringError(ref err) => (
+            AppError::ParseString(ref err) => (
                 StatusCode::BAD_REQUEST,
                 ErrorResponse {
-                    code: ErrorCode::ParsingError,
+                    code: ErrorCode::Parse,
                     message: err.to_string(),
                 },
             ),
-            AppError::ForbiddenError(ref err) => (
+            AppError::Forbidden(ref err) => (
                 StatusCode::FORBIDDEN,
                 ErrorResponse {
-                    code: ErrorCode::ForbiddenError,
+                    code: ErrorCode::Authorization,
                     message: String::from(err),
                 },
             ),
-            AppError::ParseRoleError => (
+            AppError::ParseRole => (
                 StatusCode::BAD_REQUEST,
                 ErrorResponse {
-                    code: ErrorCode::ParsingError,
+                    code: ErrorCode::Parse,
                     message: String::from("Error parsing role"),
                 },
             ),
-            AppError::ParseQueryError(ref err) => (
+            AppError::ParseQuery(ref err) => (
                 StatusCode::BAD_REQUEST,
                 ErrorResponse {
-                    code: ErrorCode::ParsingError,
+                    code: ErrorCode::Parse,
                     message: String::from(err),
                 },
             ),
@@ -139,54 +139,54 @@ impl IntoResponse for AppError {
 
 impl From<ArgonError> for AppError {
     fn from(err: ArgonError) -> Self {
-        AppError::ArgonError(err)
+        AppError::Argon(err)
     }
 }
 
 impl From<TimeError> for AppError {
     fn from(err: TimeError) -> Self {
-        AppError::TimeError(err)
+        AppError::Time(err)
     }
 }
 
 impl From<VarError> for AppError {
     fn from(err: VarError) -> Self {
-        AppError::EnvironmentVariableError(err)
+        AppError::EnvironmentVariable(err)
     }
 }
 
 impl From<ParseIntError> for AppError {
     fn from(err: ParseIntError) -> Self {
-        AppError::ParseIntError(err)
+        AppError::ParseInt(err)
     }
 }
 
 impl From<JwtError> for AppError {
     fn from(err: JwtError) -> Self {
-        AppError::JwtError(err)
+        AppError::Jwt(err)
     }
 }
 
 impl From<DbErr> for AppError {
     fn from(err: DbErr) -> Self {
-        AppError::DatabaseError(err)
+        AppError::Database(err)
     }
 }
 
 impl From<ValidationErrors> for AppError {
     fn from(err: ValidationErrors) -> Self {
-        AppError::ValidationError(err)
+        AppError::Validation(err)
     }
 }
 
 impl From<JsonRejection> for AppError {
     fn from(err: JsonRejection) -> Self {
-        AppError::ParseJsonError(err)
+        AppError::ParseJson(err)
     }
 }
 
 impl From<ToStrError> for AppError {
     fn from(err: ToStrError) -> Self {
-        AppError::ParseStringError(err)
+        AppError::ParseString(err)
     }
 }

@@ -21,7 +21,7 @@ impl JwtToken for AccessTokenClaims {}
 impl AccessTokenClaims {
     pub fn new(
         user_id: i32,
-        roles_model: &Vec<roles::Model>,
+        roles_model: &[roles::Model],
         from_time: OffsetDateTime,
     ) -> Result<AccessTokenClaims, AppError> {
         let access_token_expiration: i64 = std::env::var("ACCESS_TOKEN_EXPIRATION")?.parse()?;

@@ -134,10 +134,10 @@ pub async fn refresh(
 async fn generate_token(
     jti: Uuid,
     user_id: i32,
-    roles: &Vec<roles::Model>,
+    roles: &[roles::Model],
     now: OffsetDateTime,
 ) -> Result<(String, String, OffsetDateTime), AppError> {
-    let access_token = generate_access_token(user_id, &roles, &now)?;
+    let access_token = generate_access_token(user_id, roles, &now)?;
     let (refresh_token, expires_at) = generate_refresh_token(jti, user_id, &now).await?;
 
     Ok((access_token, refresh_token, expires_at))
@@ -145,10 +145,10 @@ async fn generate_token(
 
 fn generate_access_token(
     user_id: i32,
-    roles: &Vec<roles::Model>,
+    roles: &[roles::Model],
     now: &OffsetDateTime,
 ) -> Result<String, AppError> {
-    let access_token_claim = AccessTokenClaims::new(user_id, &roles, *now)?;
+    let access_token_claim = AccessTokenClaims::new(user_id, roles, *now)?;
     let access_token = jwt_utils::generate_token(access_token_claim)?;
     Ok(access_token)
 }

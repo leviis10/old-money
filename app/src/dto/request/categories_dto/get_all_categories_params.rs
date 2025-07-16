@@ -15,7 +15,7 @@ impl GetAllCategoriesParams {
             if (self.page.is_some() && self.page_size.is_none())
                 || (self.page.is_none() && self.page_size.is_some())
             {
-                return Err(AppError::ParseQueryError(String::from(
+                return Err(AppError::ParseQuery(String::from(
                     "Both of page and page_size must exists or not exists",
                 )));
             }
@@ -27,10 +27,10 @@ impl GetAllCategoriesParams {
         };
 
         if page == 0 {
-            return Err(AppError::ParseQueryError(String::from("page cannot be 0")));
+            return Err(AppError::ParseQuery(String::from("page cannot be 0")));
         }
         if page_size == 0 {
-            return Err(AppError::ParseQueryError(String::from(
+            return Err(AppError::ParseQuery(String::from(
                 "page_size cannot be 0",
             )));
         }

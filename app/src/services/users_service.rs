@@ -46,7 +46,7 @@ pub async fn find_by_username(
     let found_user_option = users_repository::find_by_username(db, &request.username).await?;
     match found_user_option {
         Some(found_user) => Ok(found_user),
-        None => Err(AppError::NotFoundError(String::from("User Not Found"))),
+        None => Err(AppError::NotFound(String::from("User Not Found"))),
     }
 }
 
@@ -57,6 +57,6 @@ pub async fn find_by_pk(
     let found_user_option = users_repository::find_by_pk(db, request.user_id).await?;
     match found_user_option {
         Some(found_user) => Ok(found_user),
-        None => Err(AppError::NotFoundError(String::from("User Not Found"))),
+        None => Err(AppError::NotFound(String::from("User Not Found"))),
     }
 }

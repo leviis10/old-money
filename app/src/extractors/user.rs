@@ -21,7 +21,7 @@ impl User {
         let allowed = user_roles.iter().any(|role| allowed_roles.contains(role));
 
         if !allowed {
-            return Err(AppError::ForbiddenError(String::from("Forbidden")));
+            return Err(AppError::Forbidden(String::from("Forbidden")));
         }
 
         Ok(())
@@ -37,7 +37,7 @@ impl FromRequestParts<Arc<AppState>> for User {
     ) -> Result<Self, Self::Rejection> {
         let token_header = parts.headers.get(AUTHORIZATION);
         let Some(token) = token_header else {
-            return Err(AppError::UnauthenticatedError(String::from(
+            return Err(AppError::Unauthenticated(String::from(
                 "Please authenticate",
             )));
         };

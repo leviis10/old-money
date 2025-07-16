@@ -14,6 +14,6 @@ pub async fn find_by_name(
 
     match found_role_option {
         Some(found_role) => Ok(found_role),
-        None => Err(AppError::NotFoundError(String::from("Role Not Found"))),
+        None => Err(AppError::NotFound(String::from("Role Not Found"))),
     }
 }
