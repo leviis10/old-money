@@ -24,6 +24,7 @@ pub async fn get_all_by_user_id(
 ) -> Result<(Vec<categories::Model>, Option<ItemsAndPagesNumber>), AppError> {
     let mut found_categories_builder = Categories::find()
         .filter(categories::Column::UserId.eq(user_id))
+        .filter(categories::Column::DeletedAt.is_null())
         .order_by_desc(categories::Column::CreatedAt);
 
     if let Some(name) = params.name {
