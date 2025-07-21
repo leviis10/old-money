@@ -1,10 +1,11 @@
 use serde::Serialize;
 use time::OffsetDateTime;
+use utoipa::ToSchema;
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateCategoryResponse {
-    pub id: u32,
+    pub id: i32,
 
     pub name: String,
 

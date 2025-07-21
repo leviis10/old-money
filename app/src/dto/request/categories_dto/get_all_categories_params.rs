@@ -30,9 +30,7 @@ impl GetAllCategoriesParams {
             return Err(AppError::ParseQuery(String::from("page cannot be 0")));
         }
         if page_size == 0 {
-            return Err(AppError::ParseQuery(String::from(
-                "page_size cannot be 0",
-            )));
+            return Err(AppError::ParseQuery(String::from("page_size cannot be 0")));
         }
 
         Ok(ValidatedGetAllCategoriesParams {

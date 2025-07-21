@@ -11,7 +11,7 @@ use crate::errors::AppError;
 use crate::extractors::json::ValidatedJson;
 use crate::extractors::user::User;
 use crate::services::categories_service;
-use axum::extract::{Json, Path, Query, State};
+use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use std::sync::Arc;
 use time::OffsetDateTime;
@@ -112,17 +112,47 @@ pub async fn create(
     ))
 }
 
+#[utoipa::path(
+    tag = "categories",
+    put,
+    path = "/api/v1/categories/{id}",
+    params(
+        ("id" = i32, Path)
+    ),
+    request_body(
+        content = UpdateCategoryRequest,
+        content_type = "application/json"
+    ),
+    responses(
+        (status = 200, body = SuccessResponse<UpdateCategoryResponse>)
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
 pub async fn update_by_id(
-    Path(id): Path<u32>,
-    Json(payload): Json<UpdateCategoryRequest>,
-) -> SuccessResponse<UpdateCategoryResponse> {
-    let response = UpdateCategoryResponse {
-        id,
-        name: payload.name,
-        created_at: OffsetDateTime::now_utc(),
-        updated_at: OffsetDateTime::now_utc(),
-    };
-    SuccessResponse::new("Successfully updated category", response)
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<i32>,
+    User(found_user, roles): User,
+    ValidatedJson(payload): ValidatedJson<UpdateCategoryRequest>,
+) -> Result<(StatusCode, SuccessResponse<UpdateCategoryResponse>), AppError> {
+    User::has_any_role(roles, vec![Roles::User])?;
+
+    let updated_category_model =
+        categories_service::update_by_id(&state.db, &found_user, id, &payload).await?;
+
+    Ok((
+        StatusCode::OK,
+        SuccessResponse::new(
+            "Successfully updated category",
+            UpdateCategoryResponse {
+                id: updated_category_model.id,
+                name: updated_category_model.name,
+                created_at: OffsetDateTime::now_utc(),
+                updated_at: OffsetDateTime::now_utc(),
+            },
+        ),
+    ))
 }
 
 pub async fn delete_by_id(Path(id): Path<u32>) -> StatusCode {

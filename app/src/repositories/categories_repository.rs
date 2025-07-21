@@ -44,3 +44,28 @@ pub async fn get_all_by_user_id(
 
     Ok((found_categories, Some(page_information)))
 }
+
+pub async fn update_using_model(
+    db: &DatabaseConnection,
+    model: categories::ActiveModel,
+) -> Result<categories::Model, AppError> {
+    let result = model.update(db).await?;
+    Ok(result)
+}
+
+pub async fn find_by_user_id_and_id(
+    db: &DatabaseConnection,
+    user_id: i32,
+    id: i32,
+) -> Result<categories::Model, AppError> {
+    let Some(found_category_model) = Categories::find()
+        .filter(categories::Column::Id.eq(id))
+        .filter(categories::Column::UserId.eq(user_id))
+        .one(db)
+        .await?
+    else {
+        return Err(AppError::NotFound(String::from("Category not found")));
+    };
+
+    Ok(found_category_model)
+}

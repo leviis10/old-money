@@ -46,8 +46,6 @@ pub async fn find_by_pk(
     let found_refresh_token_model = refresh_tokens_repository::find_by_pk_and_hashed_token_and_user_id_and_expires_at_greater_than_and_deleted_at_is_null(db, request.jti, &request.hashed_token, request.user_id, request.expires_at).await?;
     match found_refresh_token_model {
         Some(found_refresh_token) => Ok(found_refresh_token),
-        None => Err(AppError::NotFound(String::from(
-            "Refresh Token Not Found",
-        ))),
+        None => Err(AppError::NotFound(String::from("Refresh Token Not Found"))),
     }
 }
