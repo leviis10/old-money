@@ -155,7 +155,26 @@ pub async fn update_by_id(
     ))
 }
 
-pub async fn delete_by_id(Path(id): Path<u32>) -> StatusCode {
-    println!("Deleting category with id of {id}");
-    StatusCode::NO_CONTENT
+#[utoipa::path(
+    tag = "categories",
+    delete,
+    path = "/api/v1/categories/{id}",
+    params(
+        ("id" = i32, Path)
+    ),
+    responses(
+        (status = 204)
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
+pub async fn delete_by_id(
+    State(state): State<Arc<AppState>>,
+    User(found_user, roles): User,
+    Path(id): Path<i32>,
+) -> Result<StatusCode, AppError> {
+    User::has_any_role(roles, vec![Roles::User])?;
+    categories_service::delete_by_id(&state.db, &found_user, id).await?;
+    Ok(StatusCode::NO_CONTENT)
 }

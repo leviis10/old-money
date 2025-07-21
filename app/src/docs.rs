@@ -10,6 +10,7 @@ use utoipa::{Modify, OpenApi};
         crate::controllers::categories_controller::create,
         crate::controllers::categories_controller::get_all,
         crate::controllers::categories_controller::update_by_id,
+        crate::controllers::categories_controller::delete_by_id,
     ),
     modifiers(&SecurityAddon),
 )]

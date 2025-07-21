@@ -4,7 +4,7 @@ use crate::dto::request::categories_dto::update_category_request::UpdateCategory
 use crate::entities::{categories, users};
 use crate::errors::AppError;
 use crate::repositories::categories_repository;
-use sea_orm::{ActiveValue, DatabaseConnection, IntoActiveModel, ItemsAndPagesNumber};
+use sea_orm::{ActiveValue, DatabaseConnection, ItemsAndPagesNumber};
 
 pub async fn create(
     db: &DatabaseConnection,
@@ -38,13 +38,17 @@ pub async fn update_by_id(
     category_id: i32,
     request: &UpdateCategoryRequest,
 ) -> Result<categories::Model, AppError> {
-    let mut found_category_model =
-        categories_repository::find_by_user_id_and_id(db, found_user.id, category_id)
-            .await?
-            .into_active_model();
-    found_category_model.name = ActiveValue::Set(String::from(&request.name));
-
     let updated_category_model =
-        categories_repository::update_using_model(db, found_category_model).await?;
+        categories_repository::update_by_user_id_and_id(db, found_user.id, category_id, request)
+            .await?;
     Ok(updated_category_model)
+}
+
+pub async fn delete_by_id(
+    db: &DatabaseConnection,
+    found_user: &users::Model,
+    category_id: i32,
+) -> Result<(), AppError> {
+    categories_repository::delete_by_user_id_and_id(db, found_user.id, category_id).await?;
+    Ok(())
 }
