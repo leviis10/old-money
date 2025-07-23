@@ -14,7 +14,6 @@ use crate::services::categories_service;
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use std::sync::Arc;
-use time::OffsetDateTime;
 
 #[utoipa::path(
     tag = "categories",
@@ -49,8 +48,6 @@ pub async fn get_all(
         .map(|category| GetCategoryResponse {
             id: category.id,
             name: String::from(&category.name),
-            created_at: category.created_at,
-            updated_at: category.updated_at,
         })
         .collect();
 
@@ -105,8 +102,6 @@ pub async fn create(
             CreateCategoryResponse {
                 id: new_category_model.id,
                 name: new_category_model.name,
-                created_at: new_category_model.created_at,
-                updated_at: new_category_model.updated_at,
             },
         ),
     ))
@@ -148,8 +143,6 @@ pub async fn update_by_id(
             UpdateCategoryResponse {
                 id: updated_category_model.id,
                 name: updated_category_model.name,
-                created_at: OffsetDateTime::now_utc(),
-                updated_at: OffsetDateTime::now_utc(),
             },
         ),
     ))
