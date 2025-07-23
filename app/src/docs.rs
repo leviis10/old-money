@@ -11,6 +11,9 @@ use utoipa::{Modify, OpenApi};
         crate::controllers::categories_controller::get_all,
         crate::controllers::categories_controller::update_by_id,
         crate::controllers::categories_controller::delete_by_id,
+        crate::controllers::users_controller::get_self,
+        crate::controllers::users_controller::update_self,
+        crate::controllers::users_controller::delete_self,
     ),
     modifiers(&SecurityAddon),
 )]

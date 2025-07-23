@@ -20,6 +20,7 @@ pub async fn find_by_username(
 ) -> Result<Option<(users::Model, Vec<roles::Model>)>, AppError> {
     let found_users = Users::find()
         .filter(users::Column::Username.eq(username))
+        .filter(users::Column::DeletedAt.is_null())
         .find_with_related(roles::Entity)
         .all(db)
         .await?;
@@ -33,6 +34,7 @@ pub async fn find_by_pk(
 ) -> Result<Option<(users::Model, Vec<roles::Model>)>, AppError> {
     let found_users = Users::find()
         .filter(users::Column::Id.eq(user_id))
+        .filter(users::Column::DeletedAt.is_null())
         .find_with_related(roles::Entity)
         .all(db)
         .await?;
