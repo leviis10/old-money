@@ -5,6 +5,7 @@ pub struct Migrator;
 mod m20250701_134445_create_m2m_user_roles_tables;
 mod m20250707_132143_create_refresh_tokens_table;
 mod m20250712_000001_create_categories_table;
+mod m20250726_160856_create_budget_configs_table;
 
 #[async_trait::async_trait]
 impl MigratorTrait for Migrator {
@@ -13,6 +14,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20250701_134445_create_m2m_user_roles_tables::Migration),
             Box::new(m20250707_132143_create_refresh_tokens_table::Migration),
             Box::new(m20250712_000001_create_categories_table::Migration),
+            Box::new(m20250726_160856_create_budget_configs_table::Migration),
         ]
     }
 }

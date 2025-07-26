@@ -2,6 +2,7 @@
 
 pub mod prelude;
 
+pub mod budget_configs;
 pub mod categories;
 pub mod refresh_tokens;
 pub mod roles;
