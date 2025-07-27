@@ -14,4 +14,11 @@ This project mainly for my educational purposes but this project can be extended
 - [x] Request Body Validation
 - [x] Error Handling
 - [x] Add environment variables
-- [ ] Add swagger documentation
+- [x] Add swagger documentation
+
+## More Features
+- [ ] Add capabilities to edit budget_config duration
+- [ ] Add validation for decimal data type request
+  - create_budget_config_request
+  - update_budget_config_by_id_request
+- [ ] Capabilities to filter budget_config

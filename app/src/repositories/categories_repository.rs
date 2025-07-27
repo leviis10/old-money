@@ -57,6 +57,7 @@ pub async fn update_by_user_id_and_id(
         .await?
         .into_active_model();
     found_category_model.name = ActiveValue::Set(String::from(&request.name));
+    found_category_model.updated_at = ActiveValue::Set(OffsetDateTime::now_utc());
 
     let result = found_category_model.update(db).await?;
     Ok(result)
