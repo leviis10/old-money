@@ -12,6 +12,7 @@ pub enum ErrorCode {
     Validation,
     Authentication,
     Authorization,
+    InvalidFormatter,
 }
 
 #[derive(Serialize)]

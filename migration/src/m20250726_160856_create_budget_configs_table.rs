@@ -24,7 +24,7 @@ impl MigrationTrait for Migration {
                     .col(integer(BudgetConfigs::Duration))
                     .col(decimal(BudgetConfigs::Limit))
                     .col(text_null(BudgetConfigs::Description))
-                    .col(date(BudgetConfigs::LastCreate))
+                    .col(date(BudgetConfigs::LastCreate).default(Expr::current_date()))
                     .col(
                         timestamp_with_time_zone(BudgetConfigs::CreatedAt)
                             .default(Expr::current_timestamp()),

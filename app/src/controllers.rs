@@ -1,5 +1,5 @@
 pub mod auth_controller;
-pub mod budget_config_controller;
+pub mod budget_configs_controller;
 pub mod budgets_controller;
 pub mod categories_controller;
 pub mod global_controller;

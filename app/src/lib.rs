@@ -14,6 +14,7 @@ use tracing_subscriber::EnvFilter;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
+mod constants;
 mod controllers;
 mod docs;
 mod dto;

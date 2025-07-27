@@ -137,6 +137,8 @@ dependencies = [
  "axum",
  "hex",
  "jsonwebtoken",
+ "lazy_static",
+ "rust_decimal",
  "sea-orm",
  "serde",
  "sha2",

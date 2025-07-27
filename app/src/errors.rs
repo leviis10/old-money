@@ -1,32 +1,42 @@
 use crate::dto::response::global::error_response::{ErrorCode, ErrorResponse};
 use argon2::password_hash::Error as ArgonError;
-use axum::extract::rejection::JsonRejection;
+use axum::extract::rejection::JsonRejection as JsonRejectionError;
 use axum::http::StatusCode;
 use axum::http::header::ToStrError;
 use axum::response::{IntoResponse, Response};
 use jsonwebtoken::errors::Error as JwtError;
+use rust_decimal::Error as ParseDecimalError;
 use sea_orm::DbErr;
 use std::env::VarError;
 use std::num::ParseIntError;
-use time::error::ComponentRange as TimeError;
+use time::error::{
+    ComponentRange as TimeError, Format as TimeFormatError,
+    InvalidFormatDescription as TimeInvalidFormatDescriptionError,
+};
 use validator::ValidationErrors;
 
 #[derive(Debug)]
 pub enum AppError {
+    Validation(ValidationErrors),
+
     Argon(ArgonError),
     Time(TimeError),
-    NotFound(String),
     EnvironmentVariable(VarError),
     ParseInt(ParseIntError),
     ParseString(ToStrError),
-    ParseRole,
+    ParseDecimal(ParseDecimalError),
+    InvalidFormatDescription(TimeInvalidFormatDescriptionError),
     Jwt(JwtError),
     Database(DbErr),
-    Validation(ValidationErrors),
-    ParseJson(JsonRejection),
+    ParseJson(JsonRejectionError),
+    Format(TimeFormatError),
+
+    NotFound(String),
     ParseQuery(String),
     Unauthenticated(String),
     Forbidden(String),
+
+    ParseRole,
 }
 
 impl IntoResponse for AppError {
@@ -109,6 +119,13 @@ impl IntoResponse for AppError {
                     message: err.to_string(),
                 },
             ),
+            AppError::ParseDecimal(ref err) => (
+                StatusCode::BAD_REQUEST,
+                ErrorResponse {
+                    code: ErrorCode::Parse,
+                    message: err.to_string(),
+                },
+            ),
             AppError::Forbidden(ref err) => (
                 StatusCode::FORBIDDEN,
                 ErrorResponse {
@@ -128,6 +145,20 @@ impl IntoResponse for AppError {
                 ErrorResponse {
                     code: ErrorCode::Parse,
                     message: String::from(err),
+                },
+            ),
+            AppError::InvalidFormatDescription(ref err) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                ErrorResponse {
+                    code: ErrorCode::InvalidFormatter,
+                    message: err.to_string(),
+                },
+            ),
+            AppError::Format(ref err) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                ErrorResponse {
+                    code: ErrorCode::InvalidFormatter,
+                    message: err.to_string(),
                 },
             ),
         };
@@ -179,8 +210,8 @@ impl From<ValidationErrors> for AppError {
     }
 }
 
-impl From<JsonRejection> for AppError {
-    fn from(err: JsonRejection) -> Self {
+impl From<JsonRejectionError> for AppError {
+    fn from(err: JsonRejectionError) -> Self {
         AppError::ParseJson(err)
     }
 }
@@ -188,5 +219,23 @@ impl From<JsonRejection> for AppError {
 impl From<ToStrError> for AppError {
     fn from(err: ToStrError) -> Self {
         AppError::ParseString(err)
+    }
+}
+
+impl From<ParseDecimalError> for AppError {
+    fn from(err: ParseDecimalError) -> Self {
+        AppError::ParseDecimal(err)
+    }
+}
+
+impl From<TimeInvalidFormatDescriptionError> for AppError {
+    fn from(err: TimeInvalidFormatDescriptionError) -> Self {
+        AppError::InvalidFormatDescription(err)
+    }
+}
+
+impl From<TimeFormatError> for AppError {
+    fn from(err: TimeFormatError) -> Self {
+        AppError::Format(err)
     }
 }
