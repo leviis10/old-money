@@ -1,3 +1,6 @@
+use crate::constants::environment_constants::{
+    ACCESS_TOKEN_EXPIRATION, JWT_SECRET, REFRESH_TOKEN_EXPIRATION,
+};
 use crate::entities::roles;
 use crate::errors::AppError;
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation};
@@ -24,7 +27,7 @@ impl AccessTokenClaims {
         roles_model: &[roles::Model],
         from_time: OffsetDateTime,
     ) -> Result<AccessTokenClaims, AppError> {
-        let access_token_expiration: i64 = std::env::var("ACCESS_TOKEN_EXPIRATION")?.parse()?;
+        let access_token_expiration: i64 = std::env::var(ACCESS_TOKEN_EXPIRATION)?.parse()?;
         let iat = from_time.unix_timestamp();
         let exp =
             (from_time + Duration::seconds(access_token_expiration)).unix_timestamp() as usize;
@@ -43,7 +46,7 @@ impl AccessTokenClaims {
     }
 
     pub fn parse(access_token: &str) -> Result<AccessTokenClaims, AppError> {
-        let secret = std::env::var("JWT_SECRET")?;
+        let secret = std::env::var(JWT_SECRET)?;
         let access_token_claim: AccessTokenClaims = jsonwebtoken::decode(
             access_token,
             &DecodingKey::from_secret(secret.as_bytes()),
@@ -70,7 +73,7 @@ impl RefreshTokenClaims {
         jti: Uuid,
         from_time: OffsetDateTime,
     ) -> Result<(RefreshTokenClaims, OffsetDateTime), AppError> {
-        let refresh_token_expiration: i64 = std::env::var("REFRESH_TOKEN_EXPIRATION")?.parse()?;
+        let refresh_token_expiration: i64 = std::env::var(REFRESH_TOKEN_EXPIRATION)?.parse()?;
         let iat = from_time.unix_timestamp();
         let expires_at = from_time + Duration::seconds(refresh_token_expiration);
         let expires_at_timestamp = expires_at.unix_timestamp() as usize;
@@ -89,7 +92,7 @@ impl RefreshTokenClaims {
     }
 
     pub fn parse(refresh_token: &str) -> Result<RefreshTokenClaims, AppError> {
-        let secret = std::env::var("JWT_SECRET")?;
+        let secret = std::env::var(JWT_SECRET)?;
 
         let refresh_token_claim: RefreshTokenClaims = jsonwebtoken::decode(
             refresh_token,
@@ -103,7 +106,7 @@ impl RefreshTokenClaims {
 }
 
 pub fn generate_token<T: JwtToken + Serialize>(claims: T) -> Result<String, AppError> {
-    let secret = std::env::var("JWT_SECRET")?;
+    let secret = std::env::var(JWT_SECRET)?;
 
     let token = jsonwebtoken::encode(
         &Header::default(),

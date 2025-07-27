@@ -1,3 +1,4 @@
+use crate::constants::environment_constants::{DB_URI, PORT, TIMEOUT_DURATION};
 use crate::docs::ApiDoc;
 use axum::Router;
 use sea_orm::{Database, DatabaseConnection};
@@ -40,9 +41,9 @@ async fn start() -> Result<(), Box<dyn Error>> {
 
     tracing::info!("Starting the server");
 
-    let db_uri = std::env::var("DB_URI")?;
-    let timeout_duration: u64 = std::env::var("TIMEOUT_DURATION")?.parse()?;
-    let port = std::env::var("PORT")?;
+    let db_uri = std::env::var(DB_URI)?;
+    let timeout_duration: u64 = std::env::var(TIMEOUT_DURATION)?.parse()?;
+    let port = std::env::var(PORT)?;
     let address = format!("0.0.0.0:{port}");
 
     tracing::info!("Connecting to the database");
