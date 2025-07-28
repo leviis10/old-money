@@ -8,3 +8,4 @@ pub use super::refresh_tokens::Entity as RefreshTokens;
 pub use super::roles::Entity as Roles;
 pub use super::user_roles::Entity as UserRoles;
 pub use super::users::Entity as Users;
+pub use super::wallets::Entity as Wallets;

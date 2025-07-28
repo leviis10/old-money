@@ -25,6 +25,8 @@ pub enum Relation {
     RefreshTokens,
     #[sea_orm(has_many = "super::user_roles::Entity")]
     UserRoles,
+    #[sea_orm(has_many = "super::wallets::Entity")]
+    Wallets,
 }
 
 impl Related<super::budget_configs::Entity> for Entity {
@@ -48,6 +50,12 @@ impl Related<super::refresh_tokens::Entity> for Entity {
 impl Related<super::user_roles::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::UserRoles.def()
+    }
+}
+
+impl Related<super::wallets::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Wallets.def()
     }
 }
 

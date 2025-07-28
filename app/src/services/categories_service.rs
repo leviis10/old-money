@@ -22,7 +22,7 @@ pub async fn create(
     Ok(category_model)
 }
 
-pub async fn get_all(
+pub async fn find_all(
     db: &DatabaseConnection,
     user_id: i32,
     params: ValidatedGetAllCategoriesParams,

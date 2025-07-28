@@ -23,8 +23,6 @@ pub async fn create(
     };
     let new_budget_config = budget_configs_repository::save(db, new_budget_config).await?;
 
-    // TODO: create initial budget
-
     Ok(new_budget_config)
 }
 

@@ -15,9 +15,10 @@ use std::sync::Arc;
 use time::OffsetDateTime;
 
 #[utoipa::path(
-    tag = "auth",
-    post,
     path = "/api/v1/auth/register",
+    post,
+    tag = "auth",
+    operation_id = "auth_register",
     request_body(
         content = RegisterUserRequest,
         content_type = "application/json"
@@ -48,9 +49,10 @@ pub async fn register(
 }
 
 #[utoipa::path(
-    tag = "auth",
-    post,
     path = "/api/v1/auth/login",
+    post,
+    tag = "auth",
+    operation_id = "auth_login",
     request_body(
         content = LoginUserRequest,
         content_type = "application/json"
@@ -77,9 +79,10 @@ pub async fn login(
 }
 
 #[utoipa::path(
-    tag = "auth",
-    post,
     path = "/api/v1/auth/refresh",
+    post,
+    tag = "auth",
+    operation_id = "auth_refresh",
     request_body(
         content = RefreshTokenRequest,
         content_type = "application/json"

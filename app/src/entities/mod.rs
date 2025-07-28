@@ -8,3 +8,4 @@ pub mod refresh_tokens;
 pub mod roles;
 pub mod user_roles;
 pub mod users;
+pub mod wallets;

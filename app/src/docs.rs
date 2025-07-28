@@ -8,8 +8,14 @@ use utoipa::{Modify, OpenApi};
         crate::controllers::auth_controller::login,
         crate::controllers::auth_controller::refresh,
 
+        crate::controllers::budget_configs_controller::create,
+        crate::controllers::budget_configs_controller::find_all,
+        crate::controllers::budget_configs_controller::get_by_id,
+        crate::controllers::budget_configs_controller::update_by_id,
+        crate::controllers::budget_configs_controller::delete_by_id,
+
         crate::controllers::categories_controller::create,
-        crate::controllers::categories_controller::get_all,
+        crate::controllers::categories_controller::find_all,
         crate::controllers::categories_controller::update_by_id,
         crate::controllers::categories_controller::delete_by_id,
 
@@ -17,11 +23,11 @@ use utoipa::{Modify, OpenApi};
         crate::controllers::users_controller::update_self,
         crate::controllers::users_controller::delete_self,
 
-        crate::controllers::budget_configs_controller::create,
-        crate::controllers::budget_configs_controller::find_all,
-        crate::controllers::budget_configs_controller::get_by_id,
-        crate::controllers::budget_configs_controller::update_by_id,
-        crate::controllers::budget_configs_controller::delete_by_id,
+        crate::controllers::wallets_controller::create,
+        crate::controllers::wallets_controller::find_all,
+        crate::controllers::wallets_controller::get_by_id,
+        crate::controllers::wallets_controller::update_by_id,
+        crate::controllers::wallets_controller::delete_by_id,
     ),
     modifiers(&SecurityAddon),
 )]

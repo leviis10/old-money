@@ -16,9 +16,45 @@ use axum::http::StatusCode;
 use std::sync::Arc;
 
 #[utoipa::path(
-    tag = "categories",
-    get,
     path = "/api/v1/categories",
+    post,
+    tag = "categories",
+    operation_id = "categories_create",
+    request_body(
+        content = CreateCategoryRequest,
+        content_type = "application/json"
+    ),
+    responses(
+        (status = 201, body = SuccessResponse<CreateCategoryResponse>)
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
+pub async fn create(
+    State(state): State<Arc<AppState>>,
+    User(found_user, roles): User,
+    ValidatedJson(payload): ValidatedJson<CreateCategoryRequest>,
+) -> Result<(StatusCode, SuccessResponse<CreateCategoryResponse>), AppError> {
+    User::has_any_role(roles, vec![Roles::User])?;
+    let new_category_model = categories_service::create(&state.db, &found_user, &payload).await?;
+    Ok((
+        StatusCode::CREATED,
+        SuccessResponse::new(
+            "Successfully created new category",
+            CreateCategoryResponse {
+                id: new_category_model.id,
+                name: new_category_model.name,
+            },
+        ),
+    ))
+}
+
+#[utoipa::path(
+    path = "/api/v1/categories",
+    get,
+    tag = "categories",
+    operation_id = "categories_find_all",
     params(
         ("page" = Option<String>, Query),
         ("page_size" = Option<String>, Query),
@@ -31,7 +67,7 @@ use std::sync::Arc;
         ("bearer_auth" = [])
     )
 )]
-pub async fn get_all(
+pub async fn find_all(
     State(state): State<Arc<AppState>>,
     User(found_user, roles): User,
     Query(params): Query<GetAllCategoriesParams>,
@@ -40,7 +76,7 @@ pub async fn get_all(
     let validated_query_params = params.validate()?;
 
     let (found_categories, total_found_categories) =
-        categories_service::get_all(&state.db, found_user.id, validated_query_params.to_owned())
+        categories_service::find_all(&state.db, found_user.id, validated_query_params.to_owned())
             .await?;
 
     let found_categories = found_categories
@@ -74,43 +110,10 @@ pub async fn get_all(
 }
 
 #[utoipa::path(
-    tag = "categories",
-    post,
-    path = "/api/v1/categories",
-    request_body(
-        content = CreateCategoryRequest,
-        content_type = "application/json"
-    ),
-    responses(
-        (status = 201, body = SuccessResponse<CreateCategoryResponse>)
-    ),
-    security(
-        ("bearer_auth" = [])
-    )
-)]
-pub async fn create(
-    State(state): State<Arc<AppState>>,
-    User(found_user, roles): User,
-    ValidatedJson(payload): ValidatedJson<CreateCategoryRequest>,
-) -> Result<(StatusCode, SuccessResponse<CreateCategoryResponse>), AppError> {
-    User::has_any_role(roles, vec![Roles::User])?;
-    let new_category_model = categories_service::create(&state.db, &found_user, &payload).await?;
-    Ok((
-        StatusCode::CREATED,
-        SuccessResponse::new(
-            "Successfully created new category",
-            CreateCategoryResponse {
-                id: new_category_model.id,
-                name: new_category_model.name,
-            },
-        ),
-    ))
-}
-
-#[utoipa::path(
-    tag = "categories",
-    put,
     path = "/api/v1/categories/{id}",
+    put,
+    tag = "categories",
+    operation_id = "categories_update_by_id",
     params(
         ("id" = i32, Path)
     ),
@@ -149,9 +152,10 @@ pub async fn update_by_id(
 }
 
 #[utoipa::path(
-    tag = "categories",
-    delete,
     path = "/api/v1/categories/{id}",
+    delete,
+    tag = "categories",
+    operation_id = "categories_delete_by_id",
     params(
         ("id" = i32, Path)
     ),

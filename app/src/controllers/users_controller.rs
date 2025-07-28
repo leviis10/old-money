@@ -14,9 +14,10 @@ use axum::http::StatusCode;
 use std::sync::Arc;
 
 #[utoipa::path(
-    tag = "users",
-    get,
     path = "/api/v1/users/self",
+    get,
+    tag = "users",
+    operation_id = "users_get_self",
     responses(
         (status = 200, body = SuccessResponse<GetSelfResponse>)
     ),
@@ -43,9 +44,10 @@ pub async fn get_self(
 }
 
 #[utoipa::path(
-    tag = "users",
-    put,
     path = "/api/v1/users/self",
+    put,
+    tag = "users",
+    operation_id = "users_update_self",
     request_body(
         content = UpdateSelfRequest,
         content_type = "application/json"
@@ -80,9 +82,10 @@ pub async fn update_self(
 }
 
 #[utoipa::path(
-    tag = "users",
-    delete,
     path = "/api/v1/users/self",
+    delete,
+    tag = "users",
+    operation_id = "users_delete_self",
     request_body(
         content = DeleteSelfRequest,
         content_type = "application/json"

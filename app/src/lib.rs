@@ -13,6 +13,7 @@ use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
 use tracing_subscriber::EnvFilter;
 use utoipa::OpenApi;
+use utoipa::openapi::ServerBuilder;
 use utoipa_swagger_ui::SwaggerUi;
 
 mod constants;
@@ -70,8 +71,14 @@ async fn start() -> Result<(), Box<dyn Error>> {
         );
 
     if cfg!(debug_assertions) {
-        app = app
-            .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
+        let mut openapi = ApiDoc::openapi();
+        openapi.servers = Some(vec![
+            ServerBuilder::new()
+                .url(format!("http://localhost:{port}"))
+                .description(Some("Local Development Server"))
+                .build(),
+        ]);
+        app = app.merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", openapi));
     }
 
     let listener = TcpListener::bind(&address).await?;

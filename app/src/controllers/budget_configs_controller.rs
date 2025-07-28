@@ -16,9 +16,10 @@ use axum::http::StatusCode;
 use std::sync::Arc;
 
 #[utoipa::path(
-    tag = "budget-configs",
-    post,
     path = "/api/v1/budget-configs",
+    post,
+    tag = "budget-configs",
+    operation_id = "budget-configs_create",
     request_body(
         content = CreateBudgetConfigRequest,
         content_type = "application/json"
@@ -35,6 +36,8 @@ pub async fn create(
     User(found_user, roles): User,
     ValidatedJson(request): ValidatedJson<CreateBudgetConfigRequest>,
 ) -> Result<(StatusCode, SuccessResponse<CreateBudgetConfigResponse>), AppError> {
+    // TODO: create initial budget
+
     User::has_any_role(roles, vec![Roles::User])?;
 
     let new_budget_config = budget_configs_service::create(&state.db, &found_user, request).await?;
@@ -58,9 +61,10 @@ pub async fn create(
 }
 
 #[utoipa::path(
-    tag = "budget-configs",
-    get,
     path = "/api/v1/budget-configs",
+    get,
+    tag = "budget-configs",
+    operation_id = "budget-configs_find_all",
     responses(
         (status = 200, body = SuccessResponse<Vec<GetBudgetConfigResponse>>)
     ),
@@ -93,9 +97,10 @@ pub async fn find_all(
 }
 
 #[utoipa::path(
-    tag = "budget-configs",
-    get,
     path = "/api/v1/budget-configs/{id}",
+    get,
+    tag = "budget-configs",
+    operation_id = "budget-configs_get_by_id",
     params(
         ("id" = i32, Path)
     ),
@@ -131,9 +136,10 @@ pub async fn get_by_id(
 }
 
 #[utoipa::path(
-    tag = "budget-configs",
-    put,
     path = "/api/v1/budget-configs/{id}",
+    put,
+    tag = "budget-configs",
+    operation_id = "budget-configs_update_by_id",
     params(
         ("id" = i32, Path)
     ),
@@ -175,9 +181,10 @@ pub async fn update_by_id(
 }
 
 #[utoipa::path(
-    tag = "budget-configs",
-    delete,
     path = "/api/v1/budget-configs/{id}",
+    delete,
+    tag = "budget-configs",
+    operation_id = "budget-configs_delete_by_id",
     params(
         ("id" = i32, Path)
     ),
