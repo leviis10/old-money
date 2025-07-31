@@ -18,7 +18,9 @@ impl MigrationTrait for Migration {
                         ForeignKey::create()
                             .name("fk-wallets_user-id")
                             .from(Wallets::Table, Wallets::UserId)
-                            .to(Users::Table, Users::Id),
+                            .to(Users::Table, Users::Id)
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade),
                     )
                     .col(string(Wallets::Name))
                     .col(decimal(Wallets::Balance).default(0))

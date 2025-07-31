@@ -1,30 +1,38 @@
-use crate::dto::request::budget_configs_dto::create_budget_config_request::CreateBudgetConfigRequest;
+// use crate::dto::request::budget_configs_dto::create_budget_config_request::CreateBudgetConfigRequest;
 use crate::dto::request::budget_configs_dto::update_budget_config_request::UpdateBudgetConfigRequest;
+// use crate::entities::sea_orm_active_enums::RepetitionTypeEnum;
 use crate::entities::{budget_configs, users};
 use crate::errors::AppError;
 use crate::repositories::budget_configs_repository;
 use rust_decimal::Decimal;
-use sea_orm::{ActiveValue, DatabaseConnection, IntoActiveModel};
+use sea_orm::{
+    // ActiveEnum,
+    ActiveValue,
+    DatabaseConnection,
+    IntoActiveModel,
+};
 use std::str::FromStr;
 use time::OffsetDateTime;
 
-pub async fn create(
-    db: &DatabaseConnection,
-    user: &users::Model,
-    payload: CreateBudgetConfigRequest,
-) -> Result<budget_configs::Model, AppError> {
-    let new_budget_config = budget_configs::ActiveModel {
-        user_id: ActiveValue::Set(user.id),
-        name: ActiveValue::Set(payload.name),
-        duration: ActiveValue::Set(payload.duration),
-        limit: ActiveValue::Set(Decimal::from_str(&payload.limit)?),
-        description: ActiveValue::Set(payload.description),
-        ..Default::default()
-    };
-    let new_budget_config = budget_configs_repository::save(db, new_budget_config).await?;
-
-    Ok(new_budget_config)
-}
+// pub async fn create(
+//     db: &DatabaseConnection,
+//     user: &users::Model,
+//     payload: CreateBudgetConfigRequest,
+// ) -> Result<budget_configs::Model, AppError> {
+//     let new_budget_config = budget_configs::ActiveModel {
+//         user_id: ActiveValue::Set(user.id),
+//         name: ActiveValue::Set(payload.name),
+//         limit: ActiveValue::Set(Decimal::from_str(&payload.limit)?),
+//         description: ActiveValue::Set(payload.description),
+//         repetition_type: ActiveValue::Set(RepetitionTypeEnum::try_from_value(
+//             &payload.repetition_type,
+//         )?),
+//         ..Default::default()
+//     };
+//     let new_budget_config = budget_configs_repository::save(db, new_budget_config).await?;
+//
+//     Ok(new_budget_config)
+// }
 
 pub async fn get_by_id(
     db: &DatabaseConnection,

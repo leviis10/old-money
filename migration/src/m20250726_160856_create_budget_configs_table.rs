@@ -1,4 +1,6 @@
+use crate::extension::postgres::Type;
 use crate::m20250701_134445_create_m2m_user_roles_tables::Users;
+use sea_orm::{EnumIter, Iterable};
 use sea_orm_migration::{prelude::*, schema::*};
 
 #[derive(DeriveMigrationName)]
@@ -7,6 +9,17 @@ pub struct Migration;
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        // create enum type
+        manager
+            .create_type(
+                Type::create()
+                    .as_enum(RepetitionTypeEnum)
+                    .values(RepetitionTypeVariants::iter())
+                    .to_owned(),
+            )
+            .await?;
+
+        // create table
         manager
             .create_table(
                 Table::create()
@@ -18,13 +31,18 @@ impl MigrationTrait for Migration {
                         ForeignKey::create()
                             .name("fk-budget-configs_user-id")
                             .from(BudgetConfigs::Table, BudgetConfigs::UserId)
-                            .to(Users::Table, Users::Id),
+                            .to(Users::Table, Users::Id)
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade),
                     )
-                    .col(string(BudgetConfigs::Name))
-                    .col(integer(BudgetConfigs::Duration))
-                    .col(decimal(BudgetConfigs::Limit))
                     .col(text_null(BudgetConfigs::Description))
-                    .col(date(BudgetConfigs::LastCreate).default(Expr::current_date()))
+                    .col(decimal(BudgetConfigs::Limit))
+                    .col(string(BudgetConfigs::Name))
+                    .col(enumeration(
+                        BudgetConfigs::RepetitionType,
+                        RepetitionTypeEnum,
+                        RepetitionTypeVariants::iter(),
+                    ))
                     .col(
                         timestamp_with_time_zone(BudgetConfigs::CreatedAt)
                             .default(Expr::current_timestamp()),
@@ -40,22 +58,47 @@ impl MigrationTrait for Migration {
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        // drop table
         manager
             .drop_table(Table::drop().table(BudgetConfigs::Table).to_owned())
-            .await
+            .await?;
+
+        // drop enum type
+        manager
+            .drop_type(Type::drop().name(RepetitionTypeEnum).to_owned())
+            .await?;
+
+        Ok(())
     }
 }
 
 #[derive(DeriveIden)]
-enum BudgetConfigs {
+struct RepetitionTypeEnum;
+
+#[derive(DeriveIden, EnumIter)]
+enum RepetitionTypeVariants {
+    #[sea_orm(iden = "DAILY")]
+    Daily,
+
+    #[sea_orm(iden = "WEEKLY")]
+    Weekly,
+
+    #[sea_orm(iden = "MONTHLY")]
+    Monthly,
+
+    #[sea_orm(iden = "YEARLY")]
+    Yearly,
+}
+
+#[derive(DeriveIden)]
+pub enum BudgetConfigs {
     Table,
     Id,
     UserId,
-    Name,
-    Duration,
-    Limit,
     Description,
-    LastCreate,
+    Limit,
+    Name,
+    RepetitionType,
     CreatedAt,
     UpdatedAt,
     DeletedAt,

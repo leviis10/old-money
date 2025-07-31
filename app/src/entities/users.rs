@@ -19,6 +19,8 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(has_many = "super::budget_configs::Entity")]
     BudgetConfigs,
+    #[sea_orm(has_many = "super::budgets::Entity")]
+    Budgets,
     #[sea_orm(has_many = "super::categories::Entity")]
     Categories,
     #[sea_orm(has_many = "super::refresh_tokens::Entity")]
@@ -32,6 +34,12 @@ pub enum Relation {
 impl Related<super::budget_configs::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::BudgetConfigs.def()
+    }
+}
+
+impl Related<super::budgets::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Budgets.def()
     }
 }
 

@@ -22,7 +22,9 @@ impl MigrationTrait for Migration {
                         ForeignKey::create()
                             .name("fk-categories_user-id")
                             .from(Categories::Table, Categories::UserId)
-                            .to(Users::Table, Users::Id),
+                            .to(Users::Table, Users::Id)
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade),
                     )
                     .col(
                         timestamp_with_time_zone(Categories::CreatedAt)

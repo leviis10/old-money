@@ -3,6 +3,7 @@
 #![allow(unused_imports)]
 
 pub use super::budget_configs::Entity as BudgetConfigs;
+pub use super::budgets::Entity as Budgets;
 pub use super::categories::Entity as Categories;
 pub use super::refresh_tokens::Entity as RefreshTokens;
 pub use super::roles::Entity as Roles;

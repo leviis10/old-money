@@ -1,8 +1,5 @@
 use crate::AppState;
-use crate::constants::time_constants::DATE_FORMATTER;
-use crate::dto::request::budget_configs_dto::create_budget_config_request::CreateBudgetConfigRequest;
 use crate::dto::request::budget_configs_dto::update_budget_config_request::UpdateBudgetConfigRequest;
-use crate::dto::response::budget_configs_dto::create_budget_config_response::CreateBudgetConfigResponse;
 use crate::dto::response::budget_configs_dto::get_budget_config_response::GetBudgetConfigResponse;
 use crate::dto::response::budget_configs_dto::update_budget_config_response::UpdateBudgetConfigResponse;
 use crate::dto::response::global::success_response::SuccessResponse;
@@ -13,52 +10,8 @@ use crate::extractors::user::User;
 use crate::services::budget_configs_service;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
+use sea_orm::ActiveEnum;
 use std::sync::Arc;
-
-#[utoipa::path(
-    path = "/api/v1/budget-configs",
-    post,
-    tag = "budget-configs",
-    operation_id = "budget-configs_create",
-    request_body(
-        content = CreateBudgetConfigRequest,
-        content_type = "application/json"
-    ),
-    responses(
-        (status = 201, body = SuccessResponse<CreateBudgetConfigResponse>)
-    ),
-    security(
-        ("bearer_auth" = [])
-    )
-)]
-pub async fn create(
-    State(state): State<Arc<AppState>>,
-    User(found_user, roles): User,
-    ValidatedJson(request): ValidatedJson<CreateBudgetConfigRequest>,
-) -> Result<(StatusCode, SuccessResponse<CreateBudgetConfigResponse>), AppError> {
-    // TODO: create initial budget
-
-    User::has_any_role(roles, vec![Roles::User])?;
-
-    let new_budget_config = budget_configs_service::create(&state.db, &found_user, request).await?;
-
-    Ok((
-        StatusCode::CREATED,
-        SuccessResponse::new(
-            "Successfully create new Budget Config",
-            CreateBudgetConfigResponse {
-                id: new_budget_config.id,
-                name: new_budget_config.name,
-                duration: new_budget_config.duration,
-                limit: new_budget_config.limit.to_string(),
-                description: new_budget_config.description,
-                last_create: new_budget_config.last_create.format(&DATE_FORMATTER)?,
-                created_at: new_budget_config.created_at,
-                updated_at: new_budget_config.updated_at,
-            },
-        ),
-    ))
-}
 
 #[utoipa::path(
     path = "/api/v1/budget-configs",
@@ -76,6 +29,8 @@ pub async fn find_all(
     State(state): State<Arc<AppState>>,
     User(found_user, roles): User,
 ) -> Result<(StatusCode, SuccessResponse<Vec<GetBudgetConfigResponse>>), AppError> {
+    // TODO: implement create find_all filter by limit and repetition_type
+
     User::has_any_role(roles, vec![Roles::User])?;
 
     let found_budget_configs = budget_configs_service::find_all(&state.db, &found_user).await?;
@@ -84,9 +39,9 @@ pub async fn find_all(
         .map(|budget_config| GetBudgetConfigResponse {
             id: budget_config.id,
             name: budget_config.name,
-            duration: budget_config.duration,
             limit: budget_config.limit.to_string(),
             description: budget_config.description,
+            repetition_type: budget_config.repetition_type.to_value().to_string(),
         })
         .collect();
 
@@ -127,9 +82,9 @@ pub async fn get_by_id(
             GetBudgetConfigResponse {
                 id: found_budget_config.id,
                 name: found_budget_config.name,
-                duration: found_budget_config.duration,
                 limit: found_budget_config.limit.to_string(),
                 description: found_budget_config.description,
+                repetition_type: found_budget_config.repetition_type.to_value().to_string(),
             },
         ),
     ))
@@ -172,9 +127,9 @@ pub async fn update_by_id(
             UpdateBudgetConfigResponse {
                 id: updated_budget_config.id,
                 name: updated_budget_config.name,
-                duration: updated_budget_config.duration,
                 limit: updated_budget_config.limit.to_string(),
                 description: updated_budget_config.description,
+                repetition_type: updated_budget_config.repetition_type.to_value().to_string(),
             },
         ),
     ))

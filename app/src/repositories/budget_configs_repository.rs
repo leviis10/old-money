@@ -2,8 +2,13 @@ use crate::entities::prelude::BudgetConfigs;
 use crate::entities::{budget_configs, users};
 use crate::errors::AppError;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, QueryOrder,
-    TryIntoModel,
+    ActiveModelTrait,
+    ColumnTrait,
+    DatabaseConnection,
+    EntityTrait,
+    QueryFilter,
+    QueryOrder,
+    // TryIntoModel,
 };
 
 pub async fn get_active_by_id_and_user(
@@ -28,13 +33,13 @@ pub async fn update(
     Ok(updated_budget_config)
 }
 
-pub async fn save(
-    db: &DatabaseConnection,
-    budget_configs: budget_configs::ActiveModel,
-) -> Result<budget_configs::Model, AppError> {
-    let new_budget_config = budget_configs.save(db).await?;
-    Ok(new_budget_config.try_into_model()?)
-}
+// pub async fn save(
+//     db: &DatabaseConnection,
+//     budget_configs: budget_configs::ActiveModel,
+// ) -> Result<budget_configs::Model, AppError> {
+//     let new_budget_config = budget_configs.save(db).await?;
+//     Ok(new_budget_config.try_into_model()?)
+// }
 
 pub async fn find_all_active_by_user_id_order_by_name_asc(
     db: &DatabaseConnection,

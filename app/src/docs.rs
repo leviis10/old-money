@@ -8,7 +8,6 @@ use utoipa::{Modify, OpenApi};
         crate::controllers::auth_controller::login,
         crate::controllers::auth_controller::refresh,
 
-        crate::controllers::budget_configs_controller::create,
         crate::controllers::budget_configs_controller::find_all,
         crate::controllers::budget_configs_controller::get_by_id,
         crate::controllers::budget_configs_controller::update_by_id,

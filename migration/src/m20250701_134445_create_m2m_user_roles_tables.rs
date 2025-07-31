@@ -86,7 +86,7 @@ impl MigrationTrait for Migration {
 
         // seed roles table
         let roles = vec![String::from("ADMIN"), String::from("USER")];
-        seed_roles_table(&manager, roles).await?;
+        seed_roles_table(manager, roles).await?;
 
         Ok(())
     }
