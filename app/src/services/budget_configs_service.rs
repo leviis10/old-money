@@ -1,38 +1,33 @@
-// use crate::dto::request::budget_configs_dto::create_budget_config_request::CreateBudgetConfigRequest;
+use crate::dto::request::budget_configs_dto::create_budget_config_request::CreateBudgetConfigRequest;
 use crate::dto::request::budget_configs_dto::update_budget_config_request::UpdateBudgetConfigRequest;
-// use crate::entities::sea_orm_active_enums::RepetitionTypeEnum;
+use crate::entities::sea_orm_active_enums::RepetitionTypeEnum;
 use crate::entities::{budget_configs, users};
 use crate::errors::AppError;
 use crate::repositories::budget_configs_repository;
 use rust_decimal::Decimal;
-use sea_orm::{
-    // ActiveEnum,
-    ActiveValue,
-    DatabaseConnection,
-    IntoActiveModel,
-};
+use sea_orm::{ActiveEnum, ActiveValue, DatabaseConnection, IntoActiveModel};
 use std::str::FromStr;
 use time::OffsetDateTime;
 
-// pub async fn create(
-//     db: &DatabaseConnection,
-//     user: &users::Model,
-//     payload: CreateBudgetConfigRequest,
-// ) -> Result<budget_configs::Model, AppError> {
-//     let new_budget_config = budget_configs::ActiveModel {
-//         user_id: ActiveValue::Set(user.id),
-//         name: ActiveValue::Set(payload.name),
-//         limit: ActiveValue::Set(Decimal::from_str(&payload.limit)?),
-//         description: ActiveValue::Set(payload.description),
-//         repetition_type: ActiveValue::Set(RepetitionTypeEnum::try_from_value(
-//             &payload.repetition_type,
-//         )?),
-//         ..Default::default()
-//     };
-//     let new_budget_config = budget_configs_repository::save(db, new_budget_config).await?;
-//
-//     Ok(new_budget_config)
-// }
+pub async fn create(
+    db: &DatabaseConnection,
+    user: &users::Model,
+    payload: CreateBudgetConfigRequest,
+) -> Result<budget_configs::Model, AppError> {
+    let new_budget_config = budget_configs::ActiveModel {
+        user_id: ActiveValue::Set(user.id),
+        name: ActiveValue::Set(payload.name),
+        limit: ActiveValue::Set(Decimal::from_str(&payload.limit)?),
+        description: ActiveValue::Set(payload.description),
+        repetition_type: ActiveValue::Set(RepetitionTypeEnum::try_from_value(
+            &payload.repetition_type,
+        )?),
+        ..Default::default()
+    };
+    let new_budget_config = budget_configs_repository::save(db, new_budget_config).await?;
+
+    Ok(new_budget_config)
+}
 
 pub async fn get_by_id(
     db: &DatabaseConnection,
@@ -90,4 +85,16 @@ pub async fn find_all(
         budget_configs_repository::find_all_active_by_user_id_order_by_name_asc(db, user.id)
             .await?;
     Ok(found_budget_configs)
+}
+
+pub async fn update_last_create(
+    db: &DatabaseConnection,
+    user: &users::Model,
+    id: i32,
+) -> Result<budget_configs::Model, AppError> {
+    let mut found_budget_config = get_by_id(db, user, id).await?.into_active_model();
+    found_budget_config.last_create = ActiveValue::Set(Some(OffsetDateTime::now_utc().date()));
+
+    let updated_budget_config = budget_configs_repository::save(db, found_budget_config).await?;
+    Ok(updated_budget_config)
 }

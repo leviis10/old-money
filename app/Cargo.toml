@@ -14,7 +14,7 @@ tokio = { version = "1.45.1", features = ["full"] }
 utoipa = { version = "5.4.0", features = ["time"] }
 sea-orm = {version = "1.1.12", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros", "debug-print"] }
 serde = { version = "1.0.219", features = ["derive"] }
-time = { version = "0.3.41", features = ["serde", "formatting"] }
+time = { version = "0.3.41", features = ["serde-human-readable"] }
 tower-http = {version =  "0.6.6", features = ["trace", "compression-full", "decompression-full", "request-id", "timeout", "util"] }
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 tower = "0.5.2"

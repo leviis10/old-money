@@ -35,6 +35,7 @@ pub enum AppError {
     ParseQuery(String),
     Unauthenticated(String),
     Forbidden(String),
+    ParseBody(String),
 
     ParseRole,
 }
@@ -159,6 +160,13 @@ impl IntoResponse for AppError {
                 ErrorResponse {
                     code: ErrorCode::InvalidFormatter,
                     message: err.to_string(),
+                },
+            ),
+            AppError::ParseBody(ref err) => (
+                StatusCode::BAD_REQUEST,
+                ErrorResponse {
+                    code: ErrorCode::Parse,
+                    message: String::from(err),
                 },
             ),
         };

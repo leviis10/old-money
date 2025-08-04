@@ -14,6 +14,7 @@ pub struct Model {
     pub limit: Decimal,
     pub name: String,
     pub repetition_type: RepetitionTypeEnum,
+    pub last_create: Option<TimeDate>,
     pub created_at: TimeDateTimeWithTimeZone,
     pub updated_at: TimeDateTimeWithTimeZone,
     pub deleted_at: Option<TimeDateTimeWithTimeZone>,

@@ -12,7 +12,6 @@ use crate::services::auth_service;
 use axum::extract::State;
 use axum::http::StatusCode;
 use std::sync::Arc;
-use time::OffsetDateTime;
 
 #[utoipa::path(
     path = "/api/v1/auth/register",
@@ -33,15 +32,12 @@ pub async fn register(
 ) -> Result<(StatusCode, SuccessResponse<CreateUserResponse>), AppError> {
     let user_model = auth_service::register(&state.db, &payload).await?;
 
-    let now = OffsetDateTime::now_utc();
     let response = SuccessResponse::new(
         "Success create new user",
         CreateUserResponse {
             id: user_model.id,
             username: user_model.username,
             email: user_model.email,
-            created_at: now,
-            updated_at: now,
         },
     );
 

@@ -1,5 +1,6 @@
 pub mod auth_service;
 pub mod budget_configs_service;
+pub mod budgets_service;
 pub mod categories_service;
 pub mod refresh_tokens_service;
 pub mod roles_service;

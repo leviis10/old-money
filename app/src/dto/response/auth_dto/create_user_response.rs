@@ -1,5 +1,4 @@
 use serde::Serialize;
-use time::OffsetDateTime;
 use utoipa::ToSchema;
 
 #[derive(Serialize, ToSchema)]
@@ -10,10 +9,4 @@ pub struct CreateUserResponse {
     pub username: String,
 
     pub email: String,
-
-    #[serde(with = "time::serde::rfc3339")]
-    pub created_at: OffsetDateTime,
-
-    #[serde(with = "time::serde::rfc3339")]
-    pub updated_at: OffsetDateTime,
 }

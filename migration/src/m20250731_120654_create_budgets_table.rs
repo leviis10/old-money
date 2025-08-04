@@ -23,7 +23,7 @@ impl MigrationTrait for Migration {
                             .on_delete(ForeignKeyAction::Cascade)
                             .on_update(ForeignKeyAction::Cascade),
                     )
-                    .col(integer(Budgets::BudgetConfigId))
+                    .col(integer_null(Budgets::BudgetConfigId))
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_budgets_budget-configs_budget-config-id")

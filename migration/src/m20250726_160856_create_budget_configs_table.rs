@@ -43,6 +43,7 @@ impl MigrationTrait for Migration {
                         RepetitionTypeEnum,
                         RepetitionTypeVariants::iter(),
                     ))
+                    .col(date_null(BudgetConfigs::LastCreate))
                     .col(
                         timestamp_with_time_zone(BudgetConfigs::CreatedAt)
                             .default(Expr::current_timestamp()),
@@ -99,6 +100,7 @@ pub enum BudgetConfigs {
     Limit,
     Name,
     RepetitionType,
+    LastCreate,
     CreatedAt,
     UpdatedAt,
     DeletedAt,

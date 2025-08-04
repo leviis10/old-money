@@ -9,6 +9,5 @@ pub struct GetSelfResponse {
 
     pub email: String,
 
-    #[serde(with = "time::serde::rfc3339")]
     pub created_at: OffsetDateTime,
 }
