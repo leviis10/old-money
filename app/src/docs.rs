@@ -27,6 +27,11 @@ use utoipa::{Modify, OpenApi};
         crate::controllers::wallets_controller::get_by_id,
         crate::controllers::wallets_controller::update_by_id,
         crate::controllers::wallets_controller::delete_by_id,
+
+        crate::controllers::budgets_controller::create,
+        crate::controllers::budgets_controller::find_all,
+        crate::controllers::budgets_controller::get_by_id,
+        crate::controllers::budgets_controller::update_by_id,
     ),
     modifiers(&SecurityAddon),
 )]

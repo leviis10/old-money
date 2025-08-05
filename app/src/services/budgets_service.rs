@@ -1,12 +1,12 @@
 use crate::dto::request::budget_configs_dto::create_budget_config_request::CreateBudgetConfigRequest;
-use crate::dto::request::budgets_dto::CreateBudgetRequest;
+use crate::dto::request::budgets_dto::{CreateBudgetRequest, UpdateBudgetRequest};
 use crate::entities::sea_orm_active_enums::RepetitionTypeEnum;
 use crate::entities::{budgets, users};
 use crate::errors::AppError;
 use crate::repositories::budgets_repository;
 use crate::services::budget_configs_service;
 use rust_decimal::Decimal;
-use sea_orm::{ActiveValue, DatabaseConnection};
+use sea_orm::{ActiveValue, DatabaseConnection, IntoActiveModel};
 use std::str::FromStr;
 use time::{Date, Duration, Month, OffsetDateTime};
 
@@ -111,4 +111,40 @@ async fn create_budget(
     }
 
     Ok(new_budget)
+}
+
+pub async fn find_all(
+    db: &DatabaseConnection,
+    user: &users::Model,
+) -> Result<Vec<budgets::Model>, AppError> {
+    let found_budgets = budgets_repository::find_all_active_by_user_id(db, user.id).await?;
+    Ok(found_budgets)
+}
+
+pub async fn get_by_id(
+    db: &DatabaseConnection,
+    user: &users::Model,
+    budget_id: i32,
+) -> Result<budgets::Model, AppError> {
+    let found_budget =
+        budgets_repository::get_active_by_id_and_user_id(db, budget_id, user.id).await?;
+    let Some(found_budget) = found_budget else {
+        return Err(AppError::NotFound(String::from("Budget not found.")));
+    };
+    Ok(found_budget)
+}
+
+pub async fn update_by_id(
+    db: &DatabaseConnection,
+    user: &users::Model,
+    budget_id: i32,
+    payload: UpdateBudgetRequest,
+) -> Result<budgets::Model, AppError> {
+    let mut found_budget = get_by_id(db, user, budget_id).await?.into_active_model();
+    found_budget.name = ActiveValue::Set(payload.name);
+    found_budget.limit = ActiveValue::Set(Decimal::from_str(&payload.limit)?);
+    found_budget.description = ActiveValue::Set(payload.description);
+
+    let updated_budget = budgets_repository::save(db, found_budget).await?;
+    Ok(updated_budget)
 }
