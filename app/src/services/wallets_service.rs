@@ -1,8 +1,9 @@
 use crate::dto::request::wallets_dto::{CreateWalletRequest, UpdateWalletRequest};
-use crate::entities::{users, wallets};
+use crate::entities::sea_orm_active_enums::TransactionType;
+use crate::entities::{transactions, users, wallets};
 use crate::errors::AppError;
 use crate::repositories::wallets_repository;
-use sea_orm::{ActiveValue, DatabaseConnection, IntoActiveModel};
+use sea_orm::{ActiveValue, ConnectionTrait, DatabaseConnection, IntoActiveModel};
 use time::OffsetDateTime;
 
 pub async fn create(
@@ -30,12 +31,12 @@ pub async fn find_all(
 }
 
 pub async fn get_by_id(
-    db: &DatabaseConnection,
+    connection: &impl ConnectionTrait,
     user: &users::Model,
     wallet_id: i32,
 ) -> Result<wallets::Model, AppError> {
     let Some(found_wallet) =
-        wallets_repository::find_active_by_id_and_user_id(db, wallet_id, user.id).await?
+        wallets_repository::find_active_by_id_and_user_id(connection, wallet_id, user.id).await?
     else {
         return Err(AppError::NotFound(String::from("Wallet not found")));
     };
@@ -66,4 +67,50 @@ pub async fn delete_by_id(
     found_wallet.deleted_at = ActiveValue::Set(Some(OffsetDateTime::now_utc()));
     wallets_repository::save(db, found_wallet).await?;
     Ok(())
+}
+
+pub async fn update_balance_after_transaction(
+    connection: &impl ConnectionTrait,
+    wallet: wallets::Model,
+    transaction: &transactions::Model,
+) -> Result<wallets::Model, AppError> {
+    let wallet_balance = wallet.balance;
+
+    let mut wallet = wallet.into_active_model();
+    wallet.updated_at = ActiveValue::Set(OffsetDateTime::now_utc());
+
+    match transaction.flow_direction {
+        TransactionType::Income => {
+            wallet.balance = ActiveValue::Set(wallet_balance + transaction.amount);
+        }
+        TransactionType::Outcome => {
+            wallet.balance = ActiveValue::Set(wallet_balance - transaction.amount);
+        }
+    }
+
+    let updated_wallet = wallets_repository::save(connection, wallet).await?;
+    Ok(updated_wallet)
+}
+
+pub async fn revert_transaction(
+    connection: &impl ConnectionTrait,
+    user: &users::Model,
+    transaction: &transactions::Model,
+) -> Result<wallets::Model, AppError> {
+    let found_wallet = get_by_id(connection, user, transaction.wallet_id).await?;
+    let wallet_balance = found_wallet.balance;
+
+    let mut found_wallet = found_wallet.into_active_model();
+    found_wallet.updated_at = ActiveValue::Set(OffsetDateTime::now_utc());
+    match transaction.flow_direction {
+        TransactionType::Income => {
+            found_wallet.balance = ActiveValue::Set(wallet_balance - transaction.amount);
+        }
+        TransactionType::Outcome => {
+            found_wallet.balance = ActiveValue::Set(wallet_balance + transaction.amount);
+        }
+    }
+
+    let updated_wallet = wallets_repository::save(connection, found_wallet).await?;
+    Ok(updated_wallet)
 }

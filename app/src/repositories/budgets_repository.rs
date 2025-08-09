@@ -2,12 +2,12 @@ use crate::entities::budgets;
 use crate::entities::prelude::Budgets;
 use crate::errors::AppError;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, QueryOrder,
-    TryIntoModel,
+    ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseConnection, EntityTrait, QueryFilter,
+    QueryOrder, TryIntoModel,
 };
 
 pub async fn save(
-    db: &DatabaseConnection,
+    db: &impl ConnectionTrait,
     budget: budgets::ActiveModel,
 ) -> Result<budgets::Model, AppError> {
     let budget = budget.save(db).await?.try_into_model()?;
@@ -29,7 +29,7 @@ pub async fn find_all_active_by_user_id(
 }
 
 pub async fn get_active_by_id_and_user_id(
-    db: &DatabaseConnection,
+    db: &impl ConnectionTrait,
     budget_id: i32,
     user_id: i32,
 ) -> Result<Option<budgets::Model>, AppError> {

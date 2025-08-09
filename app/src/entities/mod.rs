@@ -8,6 +8,7 @@ pub mod categories;
 pub mod refresh_tokens;
 pub mod roles;
 pub mod sea_orm_active_enums;
+pub mod transactions;
 pub mod user_roles;
 pub mod users;
 pub mod wallets;

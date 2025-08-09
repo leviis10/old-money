@@ -8,6 +8,7 @@ mod m20250712_000001_create_categories_table;
 mod m20250726_160856_create_budget_configs_table;
 mod m20250728_130953_create_wallets_table;
 mod m20250731_120654_create_budgets_table;
+mod m20250806_131727_create_transactions_table;
 
 #[async_trait::async_trait]
 impl MigratorTrait for Migrator {
@@ -19,6 +20,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20250726_160856_create_budget_configs_table::Migration),
             Box::new(m20250728_130953_create_wallets_table::Migration),
             Box::new(m20250731_120654_create_budgets_table::Migration),
+            Box::new(m20250806_131727_create_transactions_table::Migration),
         ]
     }
 }

@@ -4,7 +4,7 @@ use crate::dto::request::categories_dto::update_category_request::UpdateCategory
 use crate::entities::{categories, users};
 use crate::errors::AppError;
 use crate::repositories::categories_repository;
-use sea_orm::{ActiveValue, DatabaseConnection, ItemsAndPagesNumber};
+use sea_orm::{ActiveValue, ConnectionTrait, DatabaseConnection, ItemsAndPagesNumber};
 
 pub async fn create(
     db: &DatabaseConnection,
@@ -30,6 +30,20 @@ pub async fn find_all(
     let (found_categories, page_information) =
         categories_repository::get_all_by_user_id(db, user_id, params).await?;
     Ok((found_categories, page_information))
+}
+
+pub async fn get_by_id(
+    connection: &impl ConnectionTrait,
+    user: &users::Model,
+    category_id: i32,
+) -> Result<categories::Model, AppError> {
+    let found_category =
+        categories_repository::get_active_by_id_and_user_id(connection, category_id, user.id)
+            .await?;
+    let Some(found_category) = found_category else {
+        return Err(AppError::NotFound(String::from("Category not found")));
+    };
+    Ok(found_category)
 }
 
 pub async fn update_by_id(

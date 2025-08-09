@@ -31,6 +31,8 @@ pub enum Relation {
         on_delete = "SetNull"
     )]
     BudgetConfigs,
+    #[sea_orm(has_many = "super::transactions::Entity")]
+    Transactions,
     #[sea_orm(
         belongs_to = "super::users::Entity",
         from = "Column::UserId",
@@ -44,6 +46,12 @@ pub enum Relation {
 impl Related<super::budget_configs::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::BudgetConfigs.def()
+    }
+}
+
+impl Related<super::transactions::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Transactions.def()
     }
 }
 

@@ -5,12 +5,12 @@ use crate::entities::{budget_configs, users};
 use crate::errors::AppError;
 use crate::repositories::budget_configs_repository;
 use rust_decimal::Decimal;
-use sea_orm::{ActiveEnum, ActiveValue, DatabaseConnection, IntoActiveModel};
+use sea_orm::{ActiveEnum, ActiveValue, ConnectionTrait, DatabaseConnection, IntoActiveModel};
 use std::str::FromStr;
 use time::OffsetDateTime;
 
 pub async fn create(
-    db: &DatabaseConnection,
+    connection: &impl ConnectionTrait,
     user: &users::Model,
     payload: CreateBudgetConfigRequest,
 ) -> Result<budget_configs::Model, AppError> {
@@ -24,18 +24,19 @@ pub async fn create(
         )?),
         ..Default::default()
     };
-    let new_budget_config = budget_configs_repository::save(db, new_budget_config).await?;
+    let new_budget_config = budget_configs_repository::save(connection, new_budget_config).await?;
 
     Ok(new_budget_config)
 }
 
 pub async fn get_by_id(
-    db: &DatabaseConnection,
+    connection: &impl ConnectionTrait,
     user: &users::Model,
     budget_config_id: i32,
 ) -> Result<budget_configs::Model, AppError> {
     let found_budget_config =
-        budget_configs_repository::get_active_by_id_and_user(db, budget_config_id, user).await?;
+        budget_configs_repository::get_active_by_id_and_user(connection, budget_config_id, user)
+            .await?;
 
     let Some(found_budget_config) = found_budget_config else {
         return Err(AppError::NotFound(String::from("Budget Config not found")));
@@ -88,13 +89,14 @@ pub async fn find_all(
 }
 
 pub async fn update_last_create(
-    db: &DatabaseConnection,
+    connection: &impl ConnectionTrait,
     user: &users::Model,
     id: i32,
 ) -> Result<budget_configs::Model, AppError> {
-    let mut found_budget_config = get_by_id(db, user, id).await?.into_active_model();
+    let mut found_budget_config = get_by_id(connection, user, id).await?.into_active_model();
     found_budget_config.last_create = ActiveValue::Set(Some(OffsetDateTime::now_utc().date()));
 
-    let updated_budget_config = budget_configs_repository::save(db, found_budget_config).await?;
+    let updated_budget_config =
+        budget_configs_repository::save(connection, found_budget_config).await?;
     Ok(updated_budget_config)
 }

@@ -6,8 +6,8 @@ use crate::errors::AppError;
 use sea_orm::prelude::Expr;
 use sea_orm::sea_query::extension::postgres::PgExpr;
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, DatabaseConnection, EntityTrait, IntoActiveModel,
-    ItemsAndPagesNumber, PaginatorTrait, QueryFilter, QueryOrder,
+    ActiveModelTrait, ActiveValue, ColumnTrait, ConnectionTrait, DatabaseConnection, EntityTrait,
+    IntoActiveModel, ItemsAndPagesNumber, PaginatorTrait, QueryFilter, QueryOrder,
 };
 use time::OffsetDateTime;
 
@@ -91,4 +91,17 @@ pub async fn delete_by_user_id_and_id(
     found_category.deleted_at = ActiveValue::Set(Some(OffsetDateTime::now_utc()));
     found_category.update(db).await?;
     Ok(())
+}
+
+pub async fn get_active_by_id_and_user_id(
+    connection: &impl ConnectionTrait,
+    category_id: i32,
+    user_id: i32,
+) -> Result<Option<categories::Model>, AppError> {
+    let found_category = Categories::find_by_id(category_id)
+        .filter(categories::Column::UserId.eq(user_id))
+        .filter(categories::Column::DeletedAt.is_null())
+        .one(connection)
+        .await?;
+    Ok(found_category)
 }

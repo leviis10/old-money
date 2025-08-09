@@ -32,6 +32,12 @@ use utoipa::{Modify, OpenApi};
         crate::controllers::budgets_controller::find_all,
         crate::controllers::budgets_controller::get_by_id,
         crate::controllers::budgets_controller::update_by_id,
+        crate::controllers::budgets_controller::delete_by_id,
+
+        crate::controllers::transactions_controller::create,
+        crate::controllers::transactions_controller::find_all,
+        crate::controllers::transactions_controller::get_by_id,
+        crate::controllers::transactions_controller::update_by_id,
     ),
     modifiers(&SecurityAddon),
 )]

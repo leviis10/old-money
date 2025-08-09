@@ -47,7 +47,7 @@ impl MigrationTrait for Migration {
 }
 
 #[derive(DeriveIden)]
-enum Wallets {
+pub enum Wallets {
     Table,
     Id,
     UserId,

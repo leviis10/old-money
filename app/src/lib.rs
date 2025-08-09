@@ -72,6 +72,7 @@ async fn start() -> Result<(), Box<dyn Error>> {
 
     if cfg!(debug_assertions) {
         let mut openapi = ApiDoc::openapi();
+        openapi.info.title = String::from("old-money");
         openapi.servers = Some(vec![
             ServerBuilder::new()
                 .url(format!("http://localhost:{port}"))

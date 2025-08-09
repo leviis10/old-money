@@ -60,7 +60,7 @@ impl MigrationTrait for Migration {
 }
 
 #[derive(DeriveIden)]
-enum Budgets {
+pub enum Budgets {
     Table,
     Id,
     UserId,

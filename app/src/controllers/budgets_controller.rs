@@ -170,6 +170,27 @@ pub async fn update_by_id(
     ))
 }
 
-pub async fn delete_by_id(Path(id): Path<i32>) -> String {
-    format!("Hello from DELETE /budgets/{id}")
+#[utoipa::path(
+    path = "/api/v1/budgets/{id}",
+    delete,
+    tag = "budgets",
+    operation_id = "budgets_delete_by_id",
+    params(
+        ("id" = i32, Path)
+    ),
+    responses(
+        (status = 204)
+    ),
+    security(
+        ("bearer_auth" = [])
+    )
+)]
+pub async fn delete_by_id(
+    State(state): State<Arc<AppState>>,
+    User(found_user, roles): User,
+    Path(id): Path<i32>,
+) -> Result<StatusCode, AppError> {
+    User::has_any_role(roles, vec![Roles::User])?;
+    budgets_service::delete_by_id(&state.db, &found_user, id).await?;
+    Ok(StatusCode::NO_CONTENT)
 }

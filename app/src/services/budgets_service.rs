@@ -6,7 +6,9 @@ use crate::errors::AppError;
 use crate::repositories::budgets_repository;
 use crate::services::budget_configs_service;
 use rust_decimal::Decimal;
-use sea_orm::{ActiveValue, DatabaseConnection, IntoActiveModel};
+use sea_orm::{
+    ActiveValue, ConnectionTrait, DatabaseConnection, IntoActiveModel, TransactionTrait,
+};
 use std::str::FromStr;
 use time::{Date, Duration, Month, OffsetDateTime};
 
@@ -17,8 +19,9 @@ pub async fn create(
 ) -> Result<budgets::Model, AppError> {
     match payload.repetition_type {
         Some(ref repetition_type) => {
+            let txn = db.begin().await?;
             let new_budget_config = budget_configs_service::create(
-                db,
+                &txn,
                 user,
                 CreateBudgetConfigRequest {
                     name: String::from(&payload.name),
@@ -63,7 +66,7 @@ pub async fn create(
             };
 
             let new_budget = create_budget(
-                db,
+                &txn,
                 user,
                 payload,
                 start_date,
@@ -71,6 +74,7 @@ pub async fn create(
                 Some(new_budget_config.id),
             )
             .await?;
+            txn.commit().await?;
             Ok(new_budget)
         }
         None => {
@@ -86,7 +90,7 @@ pub async fn create(
 }
 
 async fn create_budget(
-    db: &DatabaseConnection,
+    connection: &impl ConnectionTrait,
     user: &users::Model,
     payload: CreateBudgetRequest,
     start_date: Date,
@@ -105,9 +109,9 @@ async fn create_budget(
         description: ActiveValue::Set(payload.description),
         ..Default::default()
     };
-    let new_budget = budgets_repository::save(db, new_budget).await?;
+    let new_budget = budgets_repository::save(connection, new_budget).await?;
     if let Some(budget_config_id) = budget_config_id {
-        budget_configs_service::update_last_create(db, user, budget_config_id).await?;
+        budget_configs_service::update_last_create(connection, user, budget_config_id).await?;
     }
 
     Ok(new_budget)
@@ -122,12 +126,12 @@ pub async fn find_all(
 }
 
 pub async fn get_by_id(
-    db: &DatabaseConnection,
+    connection: &impl ConnectionTrait,
     user: &users::Model,
     budget_id: i32,
 ) -> Result<budgets::Model, AppError> {
     let found_budget =
-        budgets_repository::get_active_by_id_and_user_id(db, budget_id, user.id).await?;
+        budgets_repository::get_active_by_id_and_user_id(connection, budget_id, user.id).await?;
     let Some(found_budget) = found_budget else {
         return Err(AppError::NotFound(String::from("Budget not found.")));
     };
@@ -146,5 +150,47 @@ pub async fn update_by_id(
     found_budget.description = ActiveValue::Set(payload.description);
 
     let updated_budget = budgets_repository::save(db, found_budget).await?;
+    Ok(updated_budget)
+}
+
+pub async fn delete_by_id(
+    db: &DatabaseConnection,
+    user: &users::Model,
+    budget_id: i32,
+) -> Result<(), AppError> {
+    let mut found_budget = get_by_id(db, user, budget_id).await?.into_active_model();
+    found_budget.deleted_at = ActiveValue::Set(Some(OffsetDateTime::now_utc()));
+
+    budgets_repository::save(db, found_budget).await?;
+
+    Ok(())
+}
+
+pub async fn update_amount_after_transaction(
+    db: &impl ConnectionTrait,
+    budget: budgets::Model,
+    amount: Decimal,
+) -> Result<budgets::Model, AppError> {
+    let mut budget = budget.into_active_model();
+    budget.current_amount = ActiveValue::Set(budget.current_amount.unwrap() + amount);
+
+    let updated_budget = budgets_repository::save(db, budget).await?;
+    Ok(updated_budget)
+}
+
+pub async fn revert_transaction(
+    connection: &impl ConnectionTrait,
+    user: &users::Model,
+    budget_id: i32,
+    transaction_amount: Decimal,
+) -> Result<budgets::Model, AppError> {
+    let found_budget = get_by_id(connection, user, budget_id).await?;
+    let budget_current_amount = found_budget.current_amount;
+
+    let mut found_budget = found_budget.into_active_model();
+    found_budget.updated_at = ActiveValue::Set(OffsetDateTime::now_utc());
+    found_budget.current_amount = ActiveValue::Set(budget_current_amount - transaction_amount);
+
+    let updated_budget = budgets_repository::save(connection, found_budget).await?;
     Ok(updated_budget)
 }

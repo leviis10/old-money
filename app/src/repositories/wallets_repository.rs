@@ -2,12 +2,12 @@ use crate::entities::prelude::Wallets;
 use crate::entities::wallets;
 use crate::errors::AppError;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, QueryOrder,
-    TryIntoModel,
+    ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseConnection, EntityTrait, QueryFilter,
+    QueryOrder, TryIntoModel,
 };
 
 pub async fn save(
-    db: &DatabaseConnection,
+    db: &impl ConnectionTrait,
     wallet: wallets::ActiveModel,
 ) -> Result<wallets::Model, AppError> {
     let new_wallet = wallet.save(db).await?.try_into_model()?;
@@ -28,7 +28,7 @@ pub async fn find_all_active_by_user_id_order_by_name_asc(
 }
 
 pub async fn find_active_by_id_and_user_id(
-    db: &DatabaseConnection,
+    db: &impl ConnectionTrait,
     wallet_id: i32,
     user_id: i32,
 ) -> Result<Option<wallets::Model>, AppError> {

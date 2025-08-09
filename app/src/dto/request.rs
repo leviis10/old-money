@@ -4,6 +4,7 @@ pub mod budgets_dto;
 pub mod categories_dto;
 pub mod refresh_tokens_dto;
 pub mod roles_dto;
+pub mod transactions_dto;
 pub mod user_roles_dto;
 pub mod users_dto;
 pub mod wallets_dto;

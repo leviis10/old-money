@@ -18,3 +18,11 @@ pub enum RepetitionTypeEnum {
     #[sea_orm(string_value = "YEARLY")]
     Yearly,
 }
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum)]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "transaction_type")]
+pub enum TransactionType {
+    #[sea_orm(string_value = "INCOME")]
+    Income,
+    #[sea_orm(string_value = "OUTCOME")]
+    Outcome,
+}
