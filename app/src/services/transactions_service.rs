@@ -98,8 +98,7 @@ pub async fn update_by_id(
     let found_transaction = get_by_id(&txn, user, transaction_id).await?;
     revert_transaction(&txn, user, &found_transaction).await?;
 
-    let updated_transaction =
-        apply_transaction(&txn, user, found_transaction, payload).await?;
+    let updated_transaction = apply_transaction(&txn, user, found_transaction, payload).await?;
 
     txn.commit().await?;
 
@@ -165,4 +164,24 @@ async fn apply_transaction(
 
     let updated_transaction = transactions_repository::save(connection, transaction).await?;
     Ok(updated_transaction)
+}
+
+pub async fn delete_by_id(
+    db: &DatabaseConnection,
+    user: &users::Model,
+    transaction_id: i32,
+) -> Result<(), AppError> {
+    let txn = db.begin().await?;
+
+    let found_transaction = get_by_id(&txn, user, transaction_id).await?;
+    revert_transaction(&txn, user, &found_transaction).await?;
+
+    let mut found_transaction = found_transaction.into_active_model();
+    found_transaction.deleted_at = ActiveValue::Set(Some(OffsetDateTime::now_utc()));
+
+    transactions_repository::save(&txn, found_transaction).await?;
+
+    txn.commit().await?;
+
+    Ok(())
 }

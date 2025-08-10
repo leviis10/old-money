@@ -38,6 +38,7 @@ use utoipa::{Modify, OpenApi};
         crate::controllers::transactions_controller::find_all,
         crate::controllers::transactions_controller::get_by_id,
         crate::controllers::transactions_controller::update_by_id,
+        crate::controllers::transactions_controller::delete_by_id,
     ),
     modifiers(&SecurityAddon),
 )]
