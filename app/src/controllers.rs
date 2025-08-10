@@ -3,8 +3,6 @@ pub mod budget_configs_controller;
 pub mod budgets_controller;
 pub mod categories_controller;
 pub mod global_controller;
-pub mod roles_controller;
 pub mod transactions_controller;
-pub mod user_roles_controller;
 pub mod users_controller;
 pub mod wallets_controller;

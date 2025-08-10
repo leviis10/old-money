@@ -25,6 +25,6 @@ uuid = { version = "1.17.0", features = ["v7"] }
 sha2 = "0.10.9"
 hex = "0.4.3"
 validator = { version = "0.20.0", features = ["derive"] }
-utoipa-swagger-ui = { version =  "9.0.2", features = ["axum"] }
+utoipa-swagger-ui = { version =  "9.0.2", features = ["axum", "reqwest"] }
 rust_decimal = "1.37.2"
 lazy_static = "1.5.0"
