@@ -4,7 +4,7 @@ use axum::extract::rejection::JsonRejection as JsonRejectionError;
 use axum::http::StatusCode;
 use axum::http::header::ToStrError;
 use axum::response::{IntoResponse, Response};
-use jsonwebtoken::errors::Error as JwtError;
+use jsonwebtoken::errors::{Error as JwtError, ErrorKind};
 use rust_decimal::Error as ParseDecimalError;
 use sea_orm::DbErr;
 use std::env::VarError;
@@ -78,13 +78,26 @@ impl IntoResponse for AppError {
                     message: err.to_string(),
                 },
             ),
-            AppError::Jwt(ref err) => (
-                StatusCode::BAD_REQUEST,
-                ErrorResponse {
-                    code: ErrorCode::Parse,
-                    message: err.to_string(),
-                },
-            ),
+            AppError::Jwt(ref err) => {
+                if *err.kind() == ErrorKind::ExpiredSignature {
+                    return (
+                        StatusCode::UNAUTHORIZED,
+                        ErrorResponse {
+                            code: ErrorCode::Expired,
+                            message: err.to_string(),
+                        },
+                    )
+                        .into_response();
+                }
+
+                (
+                    StatusCode::BAD_REQUEST,
+                    ErrorResponse {
+                        code: ErrorCode::Parse,
+                        message: err.to_string(),
+                    },
+                )
+            }
             AppError::Database(ref err) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 ErrorResponse {

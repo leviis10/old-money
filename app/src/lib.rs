@@ -6,6 +6,8 @@ use std::error::Error;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::net::TcpListener;
+use tokio::signal;
+use tokio::signal::unix::SignalKind;
 use tower::ServiceBuilder;
 use tower_http::ServiceBuilderExt;
 use tower_http::request_id::MakeRequestUuid;
@@ -55,7 +57,7 @@ async fn start() -> Result<(), Box<dyn Error>> {
 
     let mut app = Router::new()
         .merge(routes::register())
-        .with_state(shared_state)
+        .with_state(Arc::clone(&shared_state))
         .layer(
             ServiceBuilder::new()
                 .layer(
@@ -84,9 +86,30 @@ async fn start() -> Result<(), Box<dyn Error>> {
 
     let listener = TcpListener::bind(&address).await?;
     tracing::info!("Server started on port {port}");
-    axum::serve(listener, app).await?;
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal(Arc::clone(&shared_state)))
+        .await?;
 
     Ok(())
+}
+
+async fn shutdown_signal(state: Arc<AppState>) {
+    let ctrl_c = async { signal::ctrl_c().await.unwrap() };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(SignalKind::terminate())
+            .unwrap()
+            .recv()
+            .await
+    };
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {}
+    }
+
+    state.db.to_owned().close().await.unwrap();
 }
 
 pub fn main() {

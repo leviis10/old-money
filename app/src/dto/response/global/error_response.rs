@@ -13,6 +13,7 @@ pub enum ErrorCode {
     Authentication,
     Authorization,
     InvalidFormatter,
+    Expired,
 }
 
 #[derive(Serialize)]
