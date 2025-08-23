@@ -1,4 +1,6 @@
-use crate::dto::request::wallets_dto::{CreateWalletRequest, UpdateWalletRequest};
+use crate::dto::request::wallets_dto::{
+    CreateWalletRequest, FindAllWalletsParams, UpdateWalletRequest,
+};
 use crate::entities::sea_orm_active_enums::TransactionType;
 use crate::entities::{transactions, users, wallets};
 use crate::errors::AppError;
@@ -24,9 +26,11 @@ pub async fn create(
 pub async fn find_all(
     db: &DatabaseConnection,
     user: &users::Model,
+    params: FindAllWalletsParams,
 ) -> Result<Vec<wallets::Model>, AppError> {
     let found_wallets =
-        wallets_repository::find_all_active_by_user_id_order_by_name_asc(db, user.id).await?;
+        wallets_repository::find_all_active_by_user_id_order_by_name_asc(db, user.id, params)
+            .await?;
     Ok(found_wallets)
 }
 

@@ -1,5 +1,7 @@
 use crate::AppState;
-use crate::dto::request::wallets_dto::{CreateWalletRequest, UpdateWalletRequest};
+use crate::dto::request::wallets_dto::{
+    CreateWalletRequest, FindAllWalletsParams, UpdateWalletRequest,
+};
 use crate::dto::response::global::success_response::SuccessResponse;
 use crate::dto::response::wallets_dto::{
     CreateWalletResponse, GetWalletResponse, UpdateWalletResponse,
@@ -9,7 +11,7 @@ use crate::errors::AppError;
 use crate::extractors::json::ValidatedJson;
 use crate::extractors::user::User;
 use crate::services::wallets_service;
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use std::sync::Arc;
 
@@ -56,6 +58,9 @@ pub async fn create(
     get,
     tag = "wallets",
     operation_id = "wallets_find_all",
+    params(
+        ("max_fetch" = Option<u64>, Query),
+    ),
     responses(
         (status = 200, body = SuccessResponse<Vec<GetWalletResponse>>)
     ),
@@ -66,12 +71,13 @@ pub async fn create(
 pub async fn find_all(
     State(state): State<Arc<AppState>>,
     User(found_user, roles): User,
+    Query(params): Query<FindAllWalletsParams>,
 ) -> Result<(StatusCode, SuccessResponse<Vec<GetWalletResponse>>), AppError> {
     // TODO: implement filter by name, minimal amount, and maximal amount
 
     User::has_any_role(roles, vec![Roles::User])?;
 
-    let found_wallets = wallets_service::find_all(&state.db, &found_user).await?;
+    let found_wallets = wallets_service::find_all(&state.db, &found_user, params).await?;
     let response = found_wallets
         .into_iter()
         .map(|wallet| GetWalletResponse {
