@@ -1,6 +1,6 @@
 # Old Money
 
-This is Budget
+This is a Budget Management Application written in rust. This application is inspired by `money-lover` mobile application
 
 ## ERD
 
@@ -8,11 +8,11 @@ This is Budget
 
 ## Tech Stack
 
-- Axum
-- SeaORM
-- Swagger
-- Argon2
-- JWT
+- [Axum](https://crates.io/crates/axum), Core Web Framework
+- [SeaORM](https://www.sea-ql.org/SeaORM/), ORM
+- [Swagger](https://swagger.io/), Documentation tools
+- [Argon2](https://crates.io/crates/argon2), Password Hashing
+- [JWT](https://www.jwt.io/), Authentication Token
 
 ## Features
 
@@ -34,6 +34,7 @@ this application using docker `build command` or pull the image from docker hub.
 migrated. You can run use `sea-orm-cli` or `cargo` command to run the migration first
 
 ### Docker Run Command Example
+
 ```bash
 docker container run \
 -e ACCESS_TOKEN_EXPIRATION="300" \
