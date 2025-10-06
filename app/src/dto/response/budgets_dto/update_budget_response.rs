@@ -8,7 +8,6 @@ use utoipa::ToSchema;
 pub struct UpdateBudgetResponse {
     pub id: i32,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub budget_config_id: Option<i32>,
 
     pub name: String,
@@ -21,7 +20,6 @@ pub struct UpdateBudgetResponse {
 
     pub limit: String,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
 }
 

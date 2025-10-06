@@ -7,5 +7,4 @@ RUN cargo build --release
 FROM alpine:3.22.1
 WORKDIR /app
 COPY --from=builder /app/target/release/app .
-EXPOSE 3000
 CMD ["./app"]

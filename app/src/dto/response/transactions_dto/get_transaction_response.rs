@@ -11,14 +11,12 @@ pub struct GetTransactionResponse {
 
     pub category_id: i32,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub budget_id: Option<i32>,
 
     pub wallet_id: i32,
 
     pub amount: String,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
 
     pub flow_direction: String,

@@ -4,7 +4,7 @@ use axum::Router;
 use sea_orm::{Database, DatabaseConnection};
 use std::error::Error;
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tokio::net::TcpListener;
 use tokio::signal;
 use tokio::signal::unix::SignalKind;
@@ -37,6 +37,8 @@ struct AppState {
 
 #[tokio::main]
 async fn start() -> Result<(), Box<dyn Error>> {
+    let start_time = Instant::now();
+
     tracing_subscriber::fmt()
         .with_env_filter(EnvFilter::from_default_env())
         .with_test_writer()
@@ -86,6 +88,10 @@ async fn start() -> Result<(), Box<dyn Error>> {
 
     let listener = TcpListener::bind(&address).await?;
     tracing::info!("Server started on port {port}");
+    tracing::info!(
+        "Axum application started successfully in {:?}",
+        start_time.elapsed()
+    );
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal(Arc::clone(&shared_state)))
         .await?;

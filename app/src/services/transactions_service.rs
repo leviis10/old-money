@@ -46,15 +46,15 @@ pub async fn create(
 
     wallets_service::update_balance_after_transaction(&txn, found_wallet, &new_transaction).await?;
 
-    if let Some(found_budget) = found_budget {
-        if new_transaction.flow_direction == TransactionType::Outcome {
-            budgets_service::update_amount_after_transaction(
-                &txn,
-                found_budget,
-                new_transaction.amount,
-            )
-            .await?;
-        }
+    if let Some(found_budget) = found_budget
+        && new_transaction.flow_direction == TransactionType::Outcome
+    {
+        budgets_service::update_amount_after_transaction(
+            &txn,
+            found_budget,
+            new_transaction.amount,
+        )
+        .await?;
     }
     txn.commit().await?;
 
@@ -112,11 +112,11 @@ async fn revert_transaction(
 ) -> Result<(), AppError> {
     wallets_service::revert_transaction(connection, user, transaction).await?;
 
-    if let Some(budget_id) = transaction.budget_id {
-        if transaction.flow_direction == TransactionType::Outcome {
-            budgets_service::revert_transaction(connection, user, budget_id, transaction.amount)
-                .await?;
-        }
+    if let Some(budget_id) = transaction.budget_id
+        && transaction.flow_direction == TransactionType::Outcome
+    {
+        budgets_service::revert_transaction(connection, user, budget_id, transaction.amount)
+            .await?;
     }
 
     Ok(())
